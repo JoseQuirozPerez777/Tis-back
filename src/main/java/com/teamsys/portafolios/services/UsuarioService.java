@@ -2,9 +2,11 @@ package com.teamsys.portafolios.services;
 
 import com.teamsys.portafolios.dto.UsuarioInformacionBasicaDTO;
 import com.teamsys.portafolios.dto.UsuarioRegistroDTO;
+import com.teamsys.portafolios.entities.CodigoVerificacion;
 import com.teamsys.portafolios.entities.Rol;
 import com.teamsys.portafolios.entities.Usuario;
 import com.teamsys.portafolios.entities.Profesion;
+import com.teamsys.portafolios.repositories.CodigoVerificacionRepository;
 import com.teamsys.portafolios.repositories.RolRepository;
 import com.teamsys.portafolios.repositories.UsuarioRepository;
 import com.teamsys.portafolios.repositories.ProfesionRepository;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.Duration;
+import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -26,6 +29,9 @@ public class UsuarioService {
 
     @Autowired
     private RolRepository rolRepository;
+
+    @Autowired
+    private CodigoVerificacionRepository codigoRepository;
 
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -182,22 +188,56 @@ public class UsuarioService {
         }
     }
 
-    public boolean procesarRecuperacionPassword(String correo) {
+    public String procesarRecuperacionPassword(String correo) {
+        // 1. Validar que el usuario exista
         Usuario usuario = usuarioRepository.findByCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            // 1. Generar un código (ejemplo simple de 6 dígitos)
-            String codigo = String.valueOf((int)(Math.random() * 900000) + 100000);
+        // 2. Verificar si ya tiene un código generado que aún sea válido
+        Optional<CodigoVerificacion> codigoExistente = codigoRepository.findByUsuario(usuario);
 
-            // 2. TODO: Guardar el código en la DB con una fecha de expiración
-            // usuario.setCodigoRecuperacion(codigo);
-            // usuario.setFechaExpiracionCodigo(LocalDateTime.now().plusMinutes(15));
-            // usuarioRepository.save(usuario);
+        if (codigoExistente.isPresent()) {
+            CodigoVerificacion cv = codigoExistente.get();
+            // Si la fecha de expiración es después de "ahora", el código sigue vigente
+            if (cv.getFechaExpiracion().isAfter(LocalDateTime.now())) {
+                throw new RuntimeException("Ya tienes un código activo. Por favor, espera a que expire.");
+            }
+            // Si ya expiró, lo borramos para crear uno nuevo limpio
+            codigoRepository.delete(cv);
+        }
 
-            // 3. TODO: Enviar el correo electrónico
-            // emailService.enviarCodigo(usuario.getCorreo(), codigo);
+        // 3. Generar nuevo código de 6 dígitos
+        String nuevoCodigo = String.valueOf((int)(Math.random() * 900000) + 100000);
 
-            System.out.println("Código generado para " + correo + ": " + codigo); // Solo para pruebas
+        // 4. Guardar el nuevo código en la tabla dedicada
+        CodigoVerificacion nuevoRegistro = new CodigoVerificacion();
+        nuevoRegistro.setCodigo(nuevoCodigo);
+        nuevoRegistro.setUsuario(usuario);
+        nuevoRegistro.setTipo("RECUPERACION_PASSWORD");
+        nuevoRegistro.setFechaExpiracion(LocalDateTime.now().plusMinutes(2)); // Duración de 2 min
+
+        codigoRepository.save(nuevoRegistro);
+
+        // 5. Simulación de envío (Aquí iría tu emailService)
+        System.out.println("CÓDIGO DE SEGURIDAD (Válido por 2 min): " + nuevoCodigo);
+
+        return "Código enviado con éxito.";
+    }
+
+    public boolean validarCodigoRecuperacion(String correo, String codigoEnviado) {
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        CodigoVerificacion cv = codigoRepository.findByUsuario(usuario)
+                .orElseThrow(() -> new RuntimeException("No hay códigos solicitados para este usuario"));
+
+        // Validamos coincidencia y tiempo
+        if (cv.getCodigo().equals(codigoEnviado) && cv.getFechaExpiracion().isAfter(LocalDateTime.now())) {
+            // Código válido: Lo eliminamos para que no se use de nuevo (Seguridad)
+            codigoRepository.delete(cv);
             return true;
+        }
+
+        return false;
     }
 }
