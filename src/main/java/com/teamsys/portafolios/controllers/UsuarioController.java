@@ -1,16 +1,18 @@
 package com.teamsys.portafolios.controllers;
 
-import com.teamsys.portafolios.dto.LoginRequestDTO;
-import com.teamsys.portafolios.dto.UsuarioRegistroDTO;
-import com.teamsys.portafolios.dto.UsuarioRespuestaDTO;
+import com.teamsys.portafolios.dto.*;
 import com.teamsys.portafolios.entities.Rol;
 import com.teamsys.portafolios.entities.Usuario;
+import com.teamsys.portafolios.repositories.UsuarioRepository;
 import com.teamsys.portafolios.services.UsuarioService;
 import com.teamsys.portafolios.security.JwtUtil; // Asegúrate de importar tu JwtUtil
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -19,6 +21,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private JwtUtil jwtUtil; // Inyectamos el motor de JWT
@@ -83,6 +88,53 @@ public class UsuarioController {
         } catch (Exception e) {
             // Si está bloqueado o las credenciales fallan, llega aquí
             return ResponseEntity.status(401).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/perfil")
+    public ResponseEntity<String> actualizarPerfil(
+            @RequestBody UsuarioInformacionBasicaDTO dto,
+            Authentication authentication) { // Importado de org.springframework.security.core.Authentication
+
+        // 1. Obtener el correo del usuario autenticado (desde el JWT)
+        String correoAutenticado = authentication.getName();
+
+        // 2. Buscar al usuario y manejar el Optional
+        Usuario usuarioLogueado = usuarioRepository.findByCorreo(correoAutenticado)
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+
+        // 3. VALIDACIÓN DE SEGURIDAD:
+        // Comparamos el ID del token contra el ID que el Front intenta modificar
+        if (!usuarioLogueado.getIdUsuario().equals(dto.getIdUsuario())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("ERROR DE SEGURIDAD: No tienes permiso para modificar este perfil.");
+        }
+
+        // 4. Si pasó la prueba, procedemos
+        boolean actualizado = usuarioService.actualizarInformacionBasica(dto);
+
+        if (actualizado) {
+            return ResponseEntity.ok("Perfil actualizado con éxito");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Error al actualizar.");
+        }
+    }
+
+    @PostMapping("/password")
+    public ResponseEntity<?> solicitarRecuperacion(@RequestBody EmailRequestDTO request) {
+        try {
+            boolean enviado = usuarioService.procesarRecuperacionPassword(request.getCorreo());
+
+            if (enviado) {
+                return ResponseEntity.ok("Si el correo existe en nuestro sistema, recibirá un código de seguridad.");
+            } else {
+                // Usamos el mismo mensaje por seguridad (User Enumeration Protection)
+                return ResponseEntity.ok("Si el correo existe en nuestro sistema, recibirá un código de seguridad.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al procesar la solicitud.");
         }
     }
 }

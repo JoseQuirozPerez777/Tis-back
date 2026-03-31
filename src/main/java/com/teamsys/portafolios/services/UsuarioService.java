@@ -1,5 +1,6 @@
 package com.teamsys.portafolios.services;
 
+import com.teamsys.portafolios.dto.UsuarioInformacionBasicaDTO;
 import com.teamsys.portafolios.dto.UsuarioRegistroDTO;
 import com.teamsys.portafolios.entities.Rol;
 import com.teamsys.portafolios.entities.Usuario;
@@ -146,5 +147,57 @@ public class UsuarioService {
             registrarFallo(correo);
             throw new Exception("Credenciales incorrectas");
         }
+    }
+
+
+    public boolean actualizarInformacionBasica(UsuarioInformacionBasicaDTO dto) {
+        try {
+
+            if (!ValidadorDatos.esNombreValido(dto.getNombre())) {
+                throw new Exception("El nombre debe iniciar con mayúscula y no contener números.");
+            }
+            // 1. Buscar al usuario por el ID que viene en el DTO
+            Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            // 2. Actualizar campos simples
+            usuario.setNombre(dto.getNombre());
+            usuario.setBiografia(dto.getBiografia());
+
+            // 3. Actualizar relación con Profesión
+            if (dto.getIdProfesion() != null) {
+                Profesion profesion = profesionRepository.findById(dto.getIdProfesion())
+                        .orElseThrow(() -> new RuntimeException("Profesión no encontrada"));
+                usuario.setProfesion(profesion);
+            }
+
+            // 4. Guardar cambios
+            usuarioRepository.save(usuario);
+            return true;
+
+        } catch (Exception e) {
+            // Opcional: imprimir error en consola para debug
+            // System.out.println("Error al actualizar: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean procesarRecuperacionPassword(String correo) {
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            // 1. Generar un código (ejemplo simple de 6 dígitos)
+            String codigo = String.valueOf((int)(Math.random() * 900000) + 100000);
+
+            // 2. TODO: Guardar el código en la DB con una fecha de expiración
+            // usuario.setCodigoRecuperacion(codigo);
+            // usuario.setFechaExpiracionCodigo(LocalDateTime.now().plusMinutes(15));
+            // usuarioRepository.save(usuario);
+
+            // 3. TODO: Enviar el correo electrónico
+            // emailService.enviarCodigo(usuario.getCorreo(), codigo);
+
+            System.out.println("Código generado para " + correo + ": " + codigo); // Solo para pruebas
+            return true;
     }
 }
