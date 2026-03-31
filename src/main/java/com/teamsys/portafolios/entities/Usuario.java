@@ -40,7 +40,9 @@ public class Usuario {
     )
     private Set<Rol> roles;
 
-    // En src/main/java/com/teamsys/portafolios/entities/Usuario.java
     private int intentosFallidos = 0;
+    private LocalDateTime fechaUltimoIntentoFallido;
     private LocalDateTime fechaBloqueo;
+
+
 }
