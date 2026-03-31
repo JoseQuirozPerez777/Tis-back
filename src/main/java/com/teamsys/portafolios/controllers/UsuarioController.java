@@ -1,26 +1,53 @@
 package com.teamsys.portafolios.controllers;
 
 import com.teamsys.portafolios.dto.UsuarioRegistroDTO;
+import com.teamsys.portafolios.dto.UsuarioRespuestaDTO;
+import com.teamsys.portafolios.entities.Rol;
 import com.teamsys.portafolios.entities.Usuario;
 import com.teamsys.portafolios.services.UsuarioService;
+import com.teamsys.portafolios.security.JwtUtil; // Asegúrate de importar tu JwtUtil
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController // Indica que esta clase recibe peticiones REST (JSON)
-@RequestMapping("/api/usuarios") // Esta es la ruta base
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/usuarios")
 public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
 
-    // Aquí es donde "aterriza" la petición POST
+    @Autowired
+    private JwtUtil jwtUtil; // Inyectamos el motor de JWT
+
     @PostMapping("/registro")
     public ResponseEntity<?> registrarUsuario(@RequestBody UsuarioRegistroDTO registroDTO) {
-        // @RequestBody le dice a Spring que convierta el JSON del Front en un objeto Java
         try {
+            // 1. Guardamos el usuario usando el servicio
             Usuario nuevoUsuario = usuarioService.registrar(registroDTO);
-            return ResponseEntity.ok("Usuario registrado con éxito");
+
+            // 2. Generamos el token JWT usando el correo del usuario recién creado
+            String token = jwtUtil.generarToken(nuevoUsuario.getCorreo());
+
+            // 3. Extraemos los nombres de los roles (de objetos Rol a Strings)
+            java.util.Set<String> rolesNombres = nuevoUsuario.getRoles().stream()
+                    .map(Rol::getNombreRol)
+                    .collect(Collectors.toSet());
+
+            // 4. Construimos la respuesta estructurada
+            UsuarioRespuestaDTO.UsuarioInfo info = new UsuarioRespuestaDTO.UsuarioInfo(
+                    nuevoUsuario.getIdUsuario(),
+                    nuevoUsuario.getNombre(),
+                    nuevoUsuario.getCorreo(),
+                    rolesNombres
+            );
+
+            UsuarioRespuestaDTO respuesta = new UsuarioRespuestaDTO(token, info);
+
+            return ResponseEntity.ok(respuesta);
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
