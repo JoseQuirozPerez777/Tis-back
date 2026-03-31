@@ -7,6 +7,7 @@ import com.teamsys.portafolios.entities.Profesion;
 import com.teamsys.portafolios.repositories.RolRepository;
 import com.teamsys.portafolios.repositories.UsuarioRepository;
 import com.teamsys.portafolios.repositories.ProfesionRepository;
+import com.teamsys.portafolios.utils.ValidadorDatos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -61,8 +62,24 @@ public class UsuarioService {
         });
     }
 
-    public Usuario registrar(UsuarioRegistroDTO dto) {
+    public Usuario registrar(UsuarioRegistroDTO dto) throws Exception {
+
+        // 1. Validar Nombre (Mayúsculas, sin números)
+        if (!ValidadorDatos.esNombreValido(dto.getNombre())) {
+            throw new Exception("El nombre debe iniciar con mayúscula y no contener números.");
+        }
+
+        // 2. Validar Correo (Formato estándar)
+        if (!ValidadorDatos.esCorreoValido(dto.getCorreo())) {
+            throw new Exception("El formato del correo electrónico no es válido.");
+        }
+
+        // 3. Validar Password (Mínimo 8 caracteres)
+        if (!ValidadorDatos.esPasswordSegura(dto.getPassword())) {
+            throw new Exception("La contraseña debe tener al menos 8 caracteres.");
+        }
         // 1. Validación de duplicados
+
         if(usuarioRepository.existsByCorreo(dto.getCorreo())) {
             throw new RuntimeException("Error: El correo electrónico ya está en uso.");
         }
