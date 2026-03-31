@@ -1,5 +1,6 @@
 package com.teamsys.portafolios.controllers;
 
+import com.teamsys.portafolios.dto.LoginRequestDTO;
 import com.teamsys.portafolios.dto.UsuarioRegistroDTO;
 import com.teamsys.portafolios.dto.UsuarioRespuestaDTO;
 import com.teamsys.portafolios.entities.Rol;
@@ -50,6 +51,38 @@ public class UsuarioController {
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Dentro de UsuarioController.java
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginDTO) {
+        try {
+            // 1. Validar identidad
+            Usuario usuario = usuarioService.autenticar(loginDTO.getCorreo(), loginDTO.getPassword());
+
+            // 2. Generar Token
+            String token = jwtUtil.generarToken(usuario.getCorreo());
+
+            // 3. Mapear roles a String
+            java.util.Set<String> rolesNombres = usuario.getRoles().stream()
+                    .map(Rol::getNombreRol)
+                    .collect(Collectors.toSet());
+
+            // 4. Devolver respuesta idéntica al registro
+            UsuarioRespuestaDTO.UsuarioInfo info = new UsuarioRespuestaDTO.UsuarioInfo(
+                    usuario.getIdUsuario(),
+                    usuario.getNombre(),
+                    usuario.getCorreo(),
+                    rolesNombres
+            );
+
+            return ResponseEntity.ok(new UsuarioRespuestaDTO(token, info));
+
+        } catch (Exception e) {
+            // Si está bloqueado o las credenciales fallan, llega aquí
+            return ResponseEntity.status(401).body(e.getMessage());
         }
     }
 }

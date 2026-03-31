@@ -114,4 +114,37 @@ public class UsuarioService {
         // 7. Persistencia en MySQL
         return usuarioRepository.save(usuario);
     }
+
+    // Dentro de UsuarioService.java
+
+    public Usuario autenticar(String correo, String password) throws Exception {
+
+        if (!ValidadorDatos.esCorreoValido(correo)) {
+            throw new Exception("El formato del correo electrónico no es válido.");
+        }
+
+        // 3. Validar Password (Mínimo 8 caracteres)
+        if (!ValidadorDatos.esPasswordSegura(password)) {
+            throw new Exception("La contraseña debe tener al menos 8 caracteres.");
+        }
+
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new Exception("Credenciales incorrectas"));
+
+        // 1. Verificar si está bloqueado (Tu lógica de validarEspera)
+        validarEspera(usuario);
+
+        // 2. Comprobar contraseña
+        if (passwordEncoder.matches(password, usuario.getPassword())) {
+            // Éxito: Limpiamos fallos
+            usuario.setIntentosFallidos(0);
+            usuario.setFechaBloqueo(null);
+            usuarioRepository.save(usuario);
+            return usuario;
+        } else {
+            // Fallo: Registramos el error
+            registrarFallo(correo);
+            throw new Exception("Credenciales incorrectas");
+        }
+    }
 }
