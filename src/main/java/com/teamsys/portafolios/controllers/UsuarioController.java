@@ -92,49 +92,31 @@ public class UsuarioController {
     }
 
     @PostMapping("/perfil")
-    public ResponseEntity<String> actualizarPerfil(
+    public ResponseEntity<?> actualizarPerfil(
             @RequestBody UsuarioInformacionBasicaDTO dto,
-            Authentication authentication) { // Importado de org.springframework.security.core.Authentication
+            Authentication authentication) {
 
-        // 1. Obtener el correo del usuario autenticado (desde el JWT)
         String correoAutenticado = authentication.getName();
 
-        // 2. Buscar al usuario y manejar el Optional
         Usuario usuarioLogueado = usuarioRepository.findByCorreo(correoAutenticado)
                 .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
 
-        // 3. VALIDACIÓN DE SEGURIDAD:
-        // Comparamos el ID del token contra el ID que el Front intenta modificar
-        if (!usuarioLogueado.getIdUsuario().equals(dto.getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("ERROR DE SEGURIDAD: No tienes permiso para modificar este perfil.");
-        }
-
-        // 4. Si pasó la prueba, procedemos
-        boolean actualizado = usuarioService.actualizarInformacionBasica(dto);
+        boolean actualizado = usuarioService.actualizarInformacionBasica(dto, usuarioLogueado);
 
         if (actualizado) {
-            return ResponseEntity.ok("Perfil actualizado con éxito");
+            // Devolvemos un objeto JSON estructurado
+            return ResponseEntity.ok(java.util.Map.of(
+                    "success", true,
+                    "message", "Perfil actualizado con éxito",
+                    "data", dto
+            ));
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error al actualizar.");
+                    .body(java.util.Map.of(
+                            "success", false,
+                            "message", "Error al actualizar los datos."
+                    ));
         }
     }
 
-    @PostMapping("/password")
-    public ResponseEntity<?> solicitarRecuperacion(@RequestBody EmailRequestDTO request) {
-        try {
-            boolean enviado = usuarioService.procesarRecuperacionPassword(request.getCorreo());
-
-            if (enviado) {
-                return ResponseEntity.ok("Si el correo existe en nuestro sistema, recibirá un código de seguridad.");
-            } else {
-                // Usamos el mismo mensaje por seguridad (User Enumeration Protection)
-                return ResponseEntity.ok("Si el correo existe en nuestro sistema, recibirá un código de seguridad.");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al procesar la solicitud.");
-        }
-    }
 }

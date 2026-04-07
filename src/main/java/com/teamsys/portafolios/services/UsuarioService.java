@@ -31,6 +31,9 @@ public class UsuarioService {
     private RolRepository rolRepository;
 
     @Autowired
+    private EmailService emailService;
+
+    @Autowired
     private CodigoVerificacionRepository codigoRepository;
 
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -156,29 +159,26 @@ public class UsuarioService {
     }
 
 
-    public boolean actualizarInformacionBasica(UsuarioInformacionBasicaDTO dto) {
+    public boolean actualizarInformacionBasica(UsuarioInformacionBasicaDTO dto,Usuario usuarioLogueado) {
         try {
 
-            if (!ValidadorDatos.esNombreValido(dto.getNombre())) {
+            if (!ValidadorDatos.esNombreValido(dto.getFullName())) {
                 throw new Exception("El nombre debe iniciar con mayúscula y no contener números.");
             }
-            // 1. Buscar al usuario por el ID que viene en el DTO
-            Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             // 2. Actualizar campos simples
-            usuario.setNombre(dto.getNombre());
-            usuario.setBiografia(dto.getBiografia());
+            usuarioLogueado.setNombre(dto.getFullName());
+            usuarioLogueado.setBiografia(dto.getBio());
 
             // 3. Actualizar relación con Profesión
-            if (dto.getIdProfesion() != null) {
-                Profesion profesion = profesionRepository.findById(dto.getIdProfesion())
+            if (dto.getProfession() != null) {
+                Profesion profesion = profesionRepository.findByNombreProfesion(dto.getProfession())
                         .orElseThrow(() -> new RuntimeException("Profesión no encontrada"));
-                usuario.setProfesion(profesion);
+                usuarioLogueado.setProfesion(profesion);
             }
 
             // 4. Guardar cambios
-            usuarioRepository.save(usuario);
+            usuarioRepository.save(usuarioLogueado);
             return true;
 
         } catch (Exception e) {
@@ -188,40 +188,53 @@ public class UsuarioService {
         }
     }
 
-    public String procesarRecuperacionPassword(String correo) {
+    public String procesarRecuperacionPassword(String correo) throws Exception {
+
+        if (!ValidadorDatos.esCorreoValido(correo)) {
+            throw new Exception("El formato del correo electrónico no es válido.");
+        }
+
         // 1. Validar que el usuario exista
         Usuario usuario = usuarioRepository.findByCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // 2. Verificar si ya tiene un código generado que aún sea válido
+        // 2. Control de códigos activos (Regla de los 2 minutos)
         Optional<CodigoVerificacion> codigoExistente = codigoRepository.findByUsuario(usuario);
 
         if (codigoExistente.isPresent()) {
             CodigoVerificacion cv = codigoExistente.get();
-            // Si la fecha de expiración es después de "ahora", el código sigue vigente
+
             if (cv.getFechaExpiracion().isAfter(LocalDateTime.now())) {
-                throw new RuntimeException("Ya tienes un código activo. Por favor, espera a que expire.");
+                // Si el código actual sigue vivo, lanzamos excepción para que el Controller la capture
+                throw new RuntimeException("Ya tienes un código activo. Revisa tu correo o espera a que expire.");
             }
-            // Si ya expiró, lo borramos para crear uno nuevo limpio
+            // Si ya expiró, lo eliminamos físicamente de la DB para no tener basura
             codigoRepository.delete(cv);
+            codigoRepository.flush(); // Aseguramos que el delete se ejecute antes del nuevo insert
         }
 
-        // 3. Generar nuevo código de 6 dígitos
-        String nuevoCodigo = String.valueOf((int)(Math.random() * 900000) + 100000);
+        // 3. Generar nuevo código de 6 dígitos (000000 - 999999)
+        String nuevoCodigo = String.format("%06d", (int)(Math.random() * 1000000));
 
-        // 4. Guardar el nuevo código en la tabla dedicada
+        // 4. Guardar en la tabla de códigos
         CodigoVerificacion nuevoRegistro = new CodigoVerificacion();
         nuevoRegistro.setCodigo(nuevoCodigo);
         nuevoRegistro.setUsuario(usuario);
         nuevoRegistro.setTipo("RECUPERACION_PASSWORD");
-        nuevoRegistro.setFechaExpiracion(LocalDateTime.now().plusMinutes(2)); // Duración de 2 min
+        nuevoRegistro.setFechaExpiracion(LocalDateTime.now().plusMinutes(2));
 
         codigoRepository.save(nuevoRegistro);
 
-        // 5. Simulación de envío (Aquí iría tu emailService)
-        System.out.println("CÓDIGO DE SEGURIDAD (Válido por 2 min): " + nuevoCodigo);
+        // 5. Envío Real mediante API de Brevo
+        // Lo envolvemos en un try-catch para que si falla el correo, no se rompa la lógica de negocio
+        try {
+            emailService.enviarCodigoRecuperacion(usuario.getCorreo(), nuevoCodigo);
+        } catch (Exception e) {
+            System.err.println("Error al contactar con Brevo: " + e.getMessage());
+            // Opcional: podrías lanzar una excepción aquí si el envío es obligatorio para continuar
+        }
 
-        return "Código enviado con éxito.";
+        return "Si el correo es válido, recibirás un código de seguridad en breve.";
     }
 
     public boolean validarCodigoRecuperacion(String correo, String codigoEnviado) {

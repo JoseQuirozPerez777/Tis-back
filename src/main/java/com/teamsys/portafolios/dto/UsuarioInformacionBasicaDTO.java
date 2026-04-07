@@ -6,11 +6,11 @@ import lombok.Data;
 @Data
 public class UsuarioInformacionBasicaDTO {
 
-    private Long idUsuario;
-    private String nombre;
-    private String biografia;
+    private String fullName;
 
-    @JsonProperty("id_profesion") // Esto enlaza el JSON con esta variable
-    private Long idProfesion;
+    //@JsonProperty("id_profesion") // Esto enlaza el JSON con esta variable
+    private String profession;
+
+    private String bio;
 
 }

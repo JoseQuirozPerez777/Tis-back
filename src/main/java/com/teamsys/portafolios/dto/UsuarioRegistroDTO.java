@@ -9,6 +9,6 @@ public class UsuarioRegistroDTO {
     private String correo;
     private String password;
 
-    /*@JsonProperty("id_profesion") // Esto enlaza el JSON con esta variable
-    private Long idProfesion;*/
+    @JsonProperty("id_profesion") // Esto enlaza el JSON con esta variable
+    private Long idProfesion;
 }
