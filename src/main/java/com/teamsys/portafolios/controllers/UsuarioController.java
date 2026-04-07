@@ -119,4 +119,32 @@ public class UsuarioController {
         }
     }
 
+    @GetMapping("/perfil")
+    public ResponseEntity<?> obtenerPerfil(Authentication authentication) {
+        try {
+            // 1. Obtener el correo desde el JWT
+            String correo = authentication.getName();
+
+            // 2. Buscar al usuario
+            Usuario usuario = usuarioRepository.findByCorreo(correo)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            // 3. Mapear manualmente al DTO
+            UsuarioPerfilDTO perfil = new UsuarioPerfilDTO();
+            perfil.setNombre(usuario.getNombre());
+            perfil.setBiografia(usuario.getBiografia());
+
+            // 4. Si tiene profesión, extraemos solo el ID
+            if (usuario.getProfesion() != null) {
+                perfil.setIdProfesion(usuario.getProfesion().getIdProfesion());
+            } else {
+                perfil.setIdProfesion(null);
+            }
+
+            return ResponseEntity.ok(perfil);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
 }
