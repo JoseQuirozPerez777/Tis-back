@@ -102,13 +102,6 @@ public class UsuarioService {
         // 3. Encriptación de contraseña
         usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        // 4. Asignación de Profesión
-        if (dto.getIdProfesion() != null) {
-            Profesion prof = profesionRepository.findById(dto.getIdProfesion())
-                    .orElseThrow(() -> new RuntimeException("Error: La profesión seleccionada no existe."));
-            usuario.setProfesion(prof);
-        }
-
         // 5. ASIGNACIÓN DE ROL POR DEFECTO (Crítico para la seguridad)
         // Buscamos el objeto Rol "ROLE_USER" en la base de datos
         Rol userRol = rolRepository.findByNombreRol("ROLE_USER")
