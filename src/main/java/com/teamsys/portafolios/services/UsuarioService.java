@@ -10,12 +10,14 @@ import com.teamsys.portafolios.repositories.CodigoVerificacionRepository;
 import com.teamsys.portafolios.repositories.RolRepository;
 import com.teamsys.portafolios.repositories.UsuarioRepository;
 import com.teamsys.portafolios.repositories.ProfesionRepository;
+import com.teamsys.portafolios.security.JwtUtil;
 import com.teamsys.portafolios.utils.ValidadorDatos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.Duration;
+import org.springframework.beans.factory.annotation.Value;
 import java.util.Optional;
 
 @Service
@@ -26,6 +28,12 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil; // Necesario para crear el token de recuperación
+
+    @Value("${url.front}")
+    private String urlFront;
 
     @Autowired
     private RolRepository rolRepository;
@@ -182,7 +190,6 @@ public class UsuarioService {
     }
 
     public String procesarRecuperacionPassword(String correo) throws Exception {
-
         if (!ValidadorDatos.esCorreoValido(correo)) {
             throw new Exception("El formato del correo electrónico no es válido.");
         }
@@ -191,59 +198,37 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findByCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // 2. Control de códigos activos (Regla de los 2 minutos)
-        Optional<CodigoVerificacion> codigoExistente = codigoRepository.findByUsuario(usuario);
+        // 2. Generar un JWT específico para recuperación
+        // Recomendación: Que este token expire en 10-15 minutos (configúralo en JwtUtil)
+        String tokenRecuperacion = jwtUtil.generarToken(usuario.getCorreo());
 
-        if (codigoExistente.isPresent()) {
-            CodigoVerificacion cv = codigoExistente.get();
+        // 3. Construir la URL completa para el Frontend
+        // Ejemplo: https://tu-front.com/reset-password?token=eyJhbG...
+        String enlaceRecuperacion = urlFront + "/reset-password?token=" + tokenRecuperacion;
 
-            if (cv.getFechaExpiracion().isAfter(LocalDateTime.now())) {
-                // Si el código actual sigue vivo, lanzamos excepción para que el Controller la capture
-                throw new RuntimeException("Ya tienes un código activo. Revisa tu correo o espera a que expire.");
-            }
-            // Si ya expiró, lo eliminamos físicamente de la DB para no tener basura
-            codigoRepository.delete(cv);
-            codigoRepository.flush(); // Aseguramos que el delete se ejecute antes del nuevo insert
-        }
-
-        // 3. Generar nuevo código de 6 dígitos (000000 - 999999)
-        String nuevoCodigo = String.format("%06d", (int)(Math.random() * 1000000));
-
-        // 4. Guardar en la tabla de códigos
-        CodigoVerificacion nuevoRegistro = new CodigoVerificacion();
-        nuevoRegistro.setCodigo(nuevoCodigo);
-        nuevoRegistro.setUsuario(usuario);
-        nuevoRegistro.setTipo("RECUPERACION_PASSWORD");
-        nuevoRegistro.setFechaExpiracion(LocalDateTime.now().plusMinutes(2));
-
-        codigoRepository.save(nuevoRegistro);
-
-        // 5. Envío Real mediante API de Brevo
-        // Lo envolvemos en un try-catch para que si falla el correo, no se rompa la lógica de negocio
+        // 4. Envío Real mediante API de Brevo
         try {
-            emailService.enviarCodigoRecuperacion(usuario.getCorreo(), nuevoCodigo);
+            emailService.enviarEnlaceRecuperacion(usuario.getCorreo(), enlaceRecuperacion);
         } catch (Exception e) {
             System.err.println("Error al contactar con Brevo: " + e.getMessage());
-            // Opcional: podrías lanzar una excepción aquí si el envío es obligatorio para continuar
         }
 
-        return "Si el correo es válido, recibirás un código de seguridad en breve.";
+        return "Si el correo es válido, recibirás instrucciones en tu bandeja de entrada.";
     }
 
-    public boolean validarCodigoRecuperacion(String correo, String codigoEnviado) {
-        Usuario usuario = usuarioRepository.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        CodigoVerificacion cv = codigoRepository.findByUsuario(usuario)
-                .orElseThrow(() -> new RuntimeException("No hay códigos solicitados para este usuario"));
-
-        // Validamos coincidencia y tiempo
-        if (cv.getCodigo().equals(codigoEnviado) && cv.getFechaExpiracion().isAfter(LocalDateTime.now())) {
-            // Código válido: Lo eliminamos para que no se use de nuevo (Seguridad)
-            codigoRepository.delete(cv);
-            return true;
+    public void actualizarPasswordDirecto(String correo, String nuevoPassword) throws Exception {
+        // 1. Validar fortaleza del nuevo password
+        if (!ValidadorDatos.esPasswordSegura(nuevoPassword)) {
+            throw new Exception("La nueva contraseña debe tener al menos 8 caracteres.");
         }
 
-        return false;
+        // 2. Buscar al usuario por el correo extraído del token
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new Exception("Usuario no encontrado"));
+
+        // 3. Encriptar la nueva contraseña
+        usuario.setPassword(passwordEncoder.encode(nuevoPassword));
+
+        usuarioRepository.save(usuario);
     }
 }

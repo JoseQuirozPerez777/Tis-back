@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/password")
@@ -17,7 +18,7 @@ public class EmailController {
     @Autowired
     private UsuarioService usuarioService;
 
-    @PostMapping("/codigo-verificacion")
+    @PostMapping("/email")
     public ResponseEntity<?> solicitarRecuperacion(@RequestBody EmailRequestDTO request) {
         try {
             String enviado = usuarioService.procesarRecuperacionPassword(request.getCorreo());
@@ -31,6 +32,30 @@ public class EmailController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al procesar la solicitud.");
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetearPassword(
+            @RequestBody java.util.Map<String, String> body,
+            Authentication authentication) { // Spring inyecta el usuario autenticado por el JWT
+        try {
+            String nuevoPassword = body.get("password");
+
+            // El nombre de usuario (correo) viene del SecurityContext
+            String correo = authentication.getName();
+
+            usuarioService.actualizarPasswordDirecto(correo, nuevoPassword);
+
+            return ResponseEntity.ok(java.util.Map.of(
+                    "success", true,
+                    "message", "Contraseña actualizada correctamente."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(java.util.Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
         }
     }
 }
