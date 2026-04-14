@@ -147,4 +147,40 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
+    @PatchMapping("/foto-perfil")
+    public ResponseEntity<?> actualizarFotoPerfil(
+            @RequestBody java.util.Map<String, String> body,
+            Authentication authentication) {
+        try {
+            // 1. Extraer el campo del Map (debe coincidir con tu interfaz TS: fotoPerfil)
+            String urlFoto = body.get("fotoPerfil");
+
+            if (urlFoto == null || urlFoto.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(java.util.Map.of(
+                        "message", "El campo 'fotoPerfil' es obligatorio"
+                ));
+            }
+
+            // 2. Obtener el usuario autenticado desde el SecurityContext
+            String correo = authentication.getName();
+            Usuario usuario = usuarioRepository.findByCorreo(correo)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            // 3. Actualizar la entidad
+            usuario.setFoto(urlFoto);
+            usuarioRepository.save(usuario);
+
+            // 4. Retornar respuesta exitosa
+            return ResponseEntity.ok(java.util.Map.of(
+                    "success", true,
+                    "message", "Foto de perfil actualizada con éxito"
+                    //"fotoPerfil", urlFoto
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("message", "Error interno: " + e.getMessage()));
+        }
+    }
 }

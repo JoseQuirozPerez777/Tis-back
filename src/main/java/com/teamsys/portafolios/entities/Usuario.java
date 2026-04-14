@@ -22,6 +22,9 @@ public class Usuario {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = true)
+    private String foto;
+
     @ManyToOne
     @JoinColumn(name = "id_profesion")
     private Profesion profesion;

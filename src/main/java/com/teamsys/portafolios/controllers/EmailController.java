@@ -21,17 +21,22 @@ public class EmailController {
     @PostMapping("/email")
     public ResponseEntity<?> solicitarRecuperacion(@RequestBody EmailRequestDTO request) {
         try {
-            String enviado = usuarioService.procesarRecuperacionPassword(request.getCorreo());
+            // Ejecutamos la lógica (el String 'enviado' no lo usamos directamente en la respuesta por seguridad)
+            usuarioService.procesarRecuperacionPassword(request.getCorreo());
 
-            if (enviado!=null) {
-                return ResponseEntity.ok("Si el correo existe en nuestro sistema, recibirá un código de seguridad.");
-            } else {
-                // Usamos el mismo mensaje por seguridad (User Enumeration Protection)
-                return ResponseEntity.ok("Si el correo existe en nuestro sistema, recibirá un código de seguridad.");
-            }
+            // Retornamos un JSON estructurado
+            return ResponseEntity.ok(java.util.Map.of(
+                    "success", true,
+                    "message", "Si el correo existe en nuestro sistema, recibirá un código de seguridad."
+            ));
+
         } catch (Exception e) {
+            // También devolvemos el error como JSON para que el front no explote
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al procesar la solicitud.");
+                    .body(java.util.Map.of(
+                            "success", false,
+                            "message", "Error al procesar la solicitud."
+                    ));
         }
     }
 
