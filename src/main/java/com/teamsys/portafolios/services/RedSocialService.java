@@ -5,6 +5,7 @@ import com.teamsys.portafolios.dto.RedSocialResponseDTO;
 import com.teamsys.portafolios.entities.RedSocial;
 import com.teamsys.portafolios.entities.Usuario;
 import com.teamsys.portafolios.repositories.RedSocialRepository;
+import com.teamsys.portafolios.utils.ValidadorDatos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +28,17 @@ public class RedSocialService {
 
     public List<RedSocialResponseDTO> agregarRedes(List<RedSocialRequestDTO> redesDTO, Usuario usuario) {
         List<RedSocial> redes = redesDTO.stream().map(dto -> {
+
+            if (!ValidadorDatos.esUrlValida(dto.getUrlPerfil())) {
+                throw new RuntimeException("Formato de URL no válido para la red social: " + dto.getNombreRed());
+            }
+
             RedSocial red = new RedSocial();
             red.setUsuario(usuario);
             red.setNombreRed(dto.getNombreRed());
             red.setUrlPerfil(dto.getUrlPerfil());
-            red.setEsPublico(dto.getEsPublico()? dto.getEsPublico() : true);
+            red.setEsPublico(dto.getEsPublico());
+
             return red;
         }).collect(Collectors.toList());
 
@@ -46,12 +53,13 @@ public class RedSocialService {
         RedSocial red = redSocialRepository.findByIdRedAndUsuario(idRed, usuario)
                 .orElseThrow(() -> new RuntimeException("Red social no encontrada"));
 
+        if (!ValidadorDatos.esUrlValida(dto.getUrlPerfil())) {
+            throw new RuntimeException("Formato de URL no válido para la red social: " + dto.getNombreRed());
+        }
+
         red.setNombreRed(dto.getNombreRed());
         red.setUrlPerfil(dto.getUrlPerfil());
-
-        if (dto.getEsPublico()) {
-            red.setEsPublico(dto.getEsPublico());
-        }
+        red.setEsPublico(dto.getEsPublico());
 
         RedSocial actualizada = redSocialRepository.save(red);
 
