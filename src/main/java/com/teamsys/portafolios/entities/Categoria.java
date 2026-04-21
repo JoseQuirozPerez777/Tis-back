@@ -9,17 +9,27 @@ import java.util.List;
 @Table(name = "categorias")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class Categoria {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idCategoria;
 
     @Column(nullable = false, unique = true)
-    private String nombre;
+    private String nombre; // Ej: "Backend", "Frontend" (Técnicas) o "Laboral", "Académico" (Blandas)
 
     @Enumerated(EnumType.STRING)
-    private Habilidad.TipoHabilidad tipo;
+    @Column(nullable = false)
+    private Clasificacion clasificacion;
 
     @JsonIgnore
     @OneToMany(mappedBy = "categoria")
-    private List<Habilidad> habilidades;
+    private List<HabilidadTecnica> habilidadesTecnicas;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "categoria")
+    private List<HabilidadBlanda> habilidadesBlandas;
+
+    public enum Clasificacion {
+        TECNICA, BLANDA
+    }
 }

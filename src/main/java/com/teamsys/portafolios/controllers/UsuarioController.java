@@ -133,7 +133,7 @@ public class UsuarioController {
             UsuarioPerfilDTO perfil = new UsuarioPerfilDTO();
             perfil.setNombre(usuario.getNombre());
             perfil.setBiografia(usuario.getBiografia());
-
+            perfil.setFoto(usuario.getFoto());
             // 4. Si tiene profesión, extraemos solo el ID
             if (usuario.getProfesion() != null) {
                 perfil.setIdProfesion(usuario.getProfesion().getIdProfesion());
