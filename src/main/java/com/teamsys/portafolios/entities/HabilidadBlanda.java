@@ -1,5 +1,7 @@
 package com.teamsys.portafolios.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,6 +16,7 @@ public class HabilidadBlanda {
 
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false)
+    @JsonIgnore
     private Usuario usuario;
 
     @Column(nullable = false)
