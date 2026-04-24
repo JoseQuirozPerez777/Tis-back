@@ -1,5 +1,7 @@
 package com.teamsys.portafolios.utils;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.regex.Pattern;
 
 public class ValidadorDatos {
@@ -53,5 +55,42 @@ public class ValidadorDatos {
             return false;
         }
         return Pattern.compile(EMAIL_PATTERN).matcher(correo).matches();
+    }
+      /**
+     * Valida una URL:
+     * - No nula
+     * - Longitud entre 10 y 255
+     * - Debe iniciar con http:// o https://
+     * - Debe tener host válido
+     */
+    public static boolean esUrlValida(String url) {
+        if (url == null || url.isBlank()) {
+            return false;
+        }
+
+        url = url.trim();
+
+        if (url.length() < 10 || url.length() > 255) {
+            return false;
+        }
+
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            return false;
+        }
+
+        try {
+            URI uri = new URI(url);
+
+            if (uri.getScheme() == null || uri.getHost() == null) {
+                return false;
+            }
+
+            String host = uri.getHost();
+
+            // Debe tener al menos un punto: ejemplo linkedin.com, github.com
+            return host.contains(".") && !host.startsWith(".") && !host.endsWith(".");
+        } catch (URISyntaxException e) {
+            return false;
+        }
     }
 }
