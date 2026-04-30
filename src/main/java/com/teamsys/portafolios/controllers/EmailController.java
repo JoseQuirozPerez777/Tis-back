@@ -1,11 +1,13 @@
 package com.teamsys.portafolios.controllers;
 
 import com.teamsys.portafolios.dto.EmailRequestDTO;
+import com.teamsys.portafolios.dto.PasswordRequestDTO;
 import com.teamsys.portafolios.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -63,4 +65,27 @@ public class EmailController {
             ));
         }
     }
+     @PutMapping("/reset-password")
+    public ResponseEntity<?> cambiarPassword(
+           @RequestBody PasswordRequestDTO contrasena,
+            Authentication authentication) { // Spring inyecta el usuario autenticado por el JWT
+        try {
+
+            // El nombre de usuario (correo) viene del SecurityContext
+            String correo = authentication.getName();
+
+            usuarioService.actualizarPassword(correo, contrasena);
+
+            return ResponseEntity.ok(java.util.Map.of(
+                    "success", true,
+                    "message", "Contraseña actualizada correctamente."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(java.util.Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
 }
