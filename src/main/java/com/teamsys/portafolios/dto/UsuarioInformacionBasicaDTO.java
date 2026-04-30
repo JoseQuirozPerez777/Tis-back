@@ -12,5 +12,7 @@ public class UsuarioInformacionBasicaDTO {
     private String profession;
 
     private String bio;
+     
+    private String telefono;
 
 }
