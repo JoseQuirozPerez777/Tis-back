@@ -32,6 +32,9 @@ public class Usuario {
     @Column(columnDefinition = "TEXT")
     private String biografia;
 
+    @Column(nullable = true)
+    private String telefono; 
+
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 
     // Relación muchos a muchos para Roles
