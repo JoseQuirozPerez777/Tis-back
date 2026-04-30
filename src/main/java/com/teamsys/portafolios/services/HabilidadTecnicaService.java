@@ -22,6 +22,11 @@ public class HabilidadTecnicaService {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
+    // Método para obtener todas las categorías disponibles
+    public List<Categoria> obtenerTodasLasCategorias() {
+        return categoriaRepository.findAll();
+    }
+
     public List<HabilidadTecnica> listarPorUsuario(Usuario usuario) {
         return tecnicaRepository.findByUsuario(usuario);
     }
