@@ -93,4 +93,25 @@ public class ValidadorDatos {
             return false;
         }
     }
+     public static boolean telefonoValido(String telefono) {
+    // 1. Verificación básica: No nulo y exactamente 8 dígitos
+    if (telefono == null || telefono.length() != 8) {
+        return false;
+    }
+
+    // 2. Formato Bolivia: Empieza con 2,3,4,6 o 7 y sigue con 7 números
+    String regexBolivia = "^[23467][0-9]{7}$";
+    if (!telefono.matches(regexBolivia)) {
+        return false;
+    }
+
+    // 3. Validación de dígitos iguales (ej. 77777777, 66666666)
+    // (\\d) captura un dígito, \\1{7} verifica que ese mismo dígito se repita 7 veces más
+    if (telefono.matches("(\\d)\\1{7}")) {
+        return false;
+    }
+
+    return true;
+}
+    
 }
