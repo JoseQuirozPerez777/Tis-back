@@ -1,5 +1,6 @@
 package com.teamsys.portafolios.services;
 
+import com.teamsys.portafolios.dto.PasswordRequestDTO;
 import com.teamsys.portafolios.dto.UsuarioInformacionBasicaDTO;
 import com.teamsys.portafolios.dto.UsuarioRegistroDTO;
 import com.teamsys.portafolios.entities.CodigoVerificacion;
@@ -160,16 +161,20 @@ public class UsuarioService {
     }
 
 
-    public boolean actualizarInformacionBasica(UsuarioInformacionBasicaDTO dto,Usuario usuarioLogueado) {
-        try {
+    public void actualizarInformacionBasica(UsuarioInformacionBasicaDTO dto,Usuario usuarioLogueado)throws Exception  {
+
 
             if (!ValidadorDatos.esNombreValido(dto.getFullName())) {
                 throw new Exception("El nombre debe iniciar con mayúscula y no contener números.");
+            }
+            if (!ValidadorDatos.telefonoValido(dto.getTelefono())) {
+                throw new Exception("El formato de telefono no es valido ");
             }
 
             // 2. Actualizar campos simples
             usuarioLogueado.setNombre(dto.getFullName());
             usuarioLogueado.setBiografia(dto.getBio());
+            usuarioLogueado.setTelefono(dto.getTelefono());
 
             // 3. Actualizar relación con Profesión
             if (dto.getProfession() != null) {
@@ -180,13 +185,7 @@ public class UsuarioService {
 
             // 4. Guardar cambios
             usuarioRepository.save(usuarioLogueado);
-            return true;
-
-        } catch (Exception e) {
-            // Opcional: imprimir error en consola para debug
-            // System.out.println("Error al actualizar: " + e.getMessage());
-            return false;
-        }
+ 
     }
 
     public String procesarRecuperacionPassword(String correo) throws Exception {
@@ -231,4 +230,24 @@ public class UsuarioService {
 
         usuarioRepository.save(usuario);
     }
+     public void actualizarPassword(String correo, PasswordRequestDTO nuevoPassword) throws Exception {
+        
+         // 2. Buscar al usuario por el correo extraído del token
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new Exception("Usuario no encontrado"));
+
+        if(!passwordEncoder.matches(nuevoPassword.getPasswordActual(), usuario.getPassword())) 
+            throw new Exception("La contraseña actual no es correcta.");
+           
+        // 1. Validar fortaleza del nuevo password
+        if (!ValidadorDatos.esPasswordSegura(nuevoPassword.getPasswordNuevo())) {
+            throw new Exception("La nueva contraseña debe tener al menos 8 caracteres.");
+        }
+
+        // 3. Encriptar la nueva contraseña
+        usuario.setPassword(passwordEncoder.encode(nuevoPassword.getPasswordNuevo()));
+
+        usuarioRepository.save(usuario);
+    }
+
 }
