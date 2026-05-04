@@ -13,4 +13,6 @@ public class UsuarioPerfilDTO {
     private Long idProfesion;
     private String foto;
     private String telefono;
+    private String direccion;
+    private String correo;
 }

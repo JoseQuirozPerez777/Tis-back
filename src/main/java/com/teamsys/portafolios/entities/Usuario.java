@@ -33,7 +33,10 @@ public class Usuario {
     private String biografia;
 
     @Column(nullable = true)
-    private String telefono; 
+    private String telefono;
+    
+    @Column(nullable = true)
+    private String direccion; 
 
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 

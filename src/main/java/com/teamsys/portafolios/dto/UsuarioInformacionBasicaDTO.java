@@ -15,4 +15,6 @@ public class UsuarioInformacionBasicaDTO {
      
     private String telefono;
 
+    private String direccion;
+
 }

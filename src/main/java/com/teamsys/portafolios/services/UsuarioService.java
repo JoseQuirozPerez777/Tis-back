@@ -175,6 +175,7 @@ public class UsuarioService {
             usuarioLogueado.setNombre(dto.getFullName());
             usuarioLogueado.setBiografia(dto.getBio());
             usuarioLogueado.setTelefono(dto.getTelefono());
+            usuarioLogueado.setDireccion(dto.getDireccion());
 
             // 3. Actualizar relación con Profesión
             if (dto.getProfession() != null) {
