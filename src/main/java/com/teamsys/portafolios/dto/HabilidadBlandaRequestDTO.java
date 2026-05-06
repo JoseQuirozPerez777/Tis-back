@@ -13,4 +13,7 @@ public class HabilidadBlandaRequestDTO {
     private Long idCategoria;
 
     private String evidenciaUrl;
+
+    private String descripcion;
+
 }

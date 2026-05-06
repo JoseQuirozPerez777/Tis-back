@@ -26,5 +26,7 @@ public class HabilidadBlanda {
     @JoinColumn(name = "id_categoria", nullable = false) // Aquí se guarda el "Contexto"
     private Categoria categoria;
 
+    private String descripcion;
+
     private String evidenciaUrl; // El string/URL que solicitaste
 }
