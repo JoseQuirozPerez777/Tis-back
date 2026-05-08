@@ -7,8 +7,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "formaciones_academicas")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class FormacionAcademica {
 
     @Id
@@ -23,8 +25,15 @@ public class FormacionAcademica {
     @Column(nullable = false)
     private String institucion;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "titulo_obtenido")
     private String tituloObtenido;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private NivelAcademico nivel;
+
+    @Column(nullable = true)
+    private String area;
 
     @Column(name = "fecha_inicio", nullable = false)
     private LocalDate fechaInicio;
@@ -35,8 +44,25 @@ public class FormacionAcademica {
     @Column(columnDefinition = "TEXT")
     private String descripcion;
 
-    private boolean enCurso;
+    @Enumerated(EnumType.STRING)
+    private EstadoFormacion estado;
 
-    // Nueva columna para el logo o imagen del título
+    @Column(name = "url_imagen")
     private String urlImagen;
+
+    // --- ENUMS INTERNOS ---
+
+    public enum NivelAcademico {
+        TECNICO,
+        LICENCIATURA,
+        DIPLOMADO,
+        MAESTRIA,
+        DOCTORADO
+    }
+
+    public enum EstadoFormacion {
+        EN_CURSO,
+        FINALIZADO,
+        INCOMPLETO
+    }
 }

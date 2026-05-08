@@ -1,8 +1,7 @@
 package com.teamsys.portafolios.controllers;
 
 import com.teamsys.portafolios.dto.ExperienciaLaboralRequestDTO;
-import com.teamsys.portafolios.dto.ExperienciaLaboralUpdateDTO;
-import com.teamsys.portafolios.entities.ExperienciaLaboral;
+import com.teamsys.portafolios.dto.ExperienciaLaboralResponseDTO;
 import com.teamsys.portafolios.entities.Usuario;
 import com.teamsys.portafolios.repositories.UsuarioRepository;
 import com.teamsys.portafolios.services.ExperienciaLaboralService;
@@ -12,11 +11,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/experiencia-laboral")
+@RequestMapping("/api/experiencias")
 @CrossOrigin(origins = "*")
 public class ExperienciaLaboralController {
 
@@ -27,7 +27,7 @@ public class ExperienciaLaboralController {
     private UsuarioRepository usuarioRepository;
 
     @GetMapping("/mis-experiencias")
-    public ResponseEntity<List<ExperienciaLaboral>> listar(Authentication authentication) {
+    public ResponseEntity<List<ExperienciaLaboralResponseDTO>> listar(Authentication authentication) {
         Usuario usuario = obtenerUsuario(authentication);
         return ResponseEntity.ok(service.listarPorUsuario(usuario));
     }
@@ -35,28 +35,36 @@ public class ExperienciaLaboralController {
     @PostMapping("/registrar")
     public ResponseEntity<?> crear(@Valid @RequestBody ExperienciaLaboralRequestDTO dto, Authentication authentication) {
         Usuario usuario = obtenerUsuario(authentication);
-        ExperienciaLaboral nueva = service.guardar(dto, usuario);
+        ExperienciaLaboralResponseDTO nueva = service.guardar(dto, usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-            "message", "Experiencia laboral agregada correctamente",
-            "id", nueva.getId()
+                "message", "Experiencia laboral agregada correctamente",
+                "data", nueva
         ));
     }
 
-    @PutMapping("/actualizar")
-    public ResponseEntity<?> actualizar(@Valid @RequestBody ExperienciaLaboralUpdateDTO dto, Authentication authentication) {
+    @PutMapping("/actualizar/{id}")
+    public ResponseEntity<?> actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody ExperienciaLaboralRequestDTO dto,
+            Authentication authentication) {
+
         Usuario usuario = obtenerUsuario(authentication);
-        service.actualizar(dto, usuario);
-        return ResponseEntity.ok(Map.of("message", "Experiencia laboral actualizada correctamente"));
+        ExperienciaLaboralResponseDTO actualizada = service.actualizar(id, dto, usuario);
+        return ResponseEntity.ok(Map.of(
+                "message", "Experiencia laboral actualizada correctamente",
+                "data", actualizada
+        ));
     }
 
     @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+    public ResponseEntity<?> eliminar(@PathVariable Long id, Authentication authentication) {
+        // Es recomendable pasar el usuario al service también en delete para validar dueño
         service.eliminar(id);
         return ResponseEntity.ok(Map.of("message", "Experiencia eliminada correctamente"));
     }
 
     private Usuario obtenerUsuario(Authentication authentication) {
-        return usuarioRepository.findByCorreo(authentication.getName())
+        return usuarioRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 }

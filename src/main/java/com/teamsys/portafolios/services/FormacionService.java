@@ -46,23 +46,43 @@ public class FormacionService {
     private void mapearEntidad(FormacionAcademica f, FormacionRequestDTO dto) {
         f.setInstitucion(dto.getInstitucion());
         f.setTituloObtenido(dto.getTituloObtenido());
+        f.setArea(dto.getArea());
         f.setFechaInicio(dto.getFechaInicio());
-        f.setFechaFin(dto.isEnCurso() ? null : dto.getFechaFin());
+        f.setFechaFin(dto.getFechaFin());
         f.setDescripcion(dto.getDescripcion());
-        f.setEnCurso(dto.isEnCurso());
-        f.setUrlImagen(dto.getUrlImagen()); // Mapear nueva columna
+        f.setUrlImagen(dto.getUrlImagen());
+
+        // Conversión de String a Enum (Nivel)
+        if (dto.getNivel() != null) {
+            f.setNivel(FormacionAcademica.NivelAcademico.valueOf(dto.getNivel().toUpperCase()));
+        }
+
+        // Conversión de String a Enum (Estado)
+        if (dto.getEstado() != null) {
+            f.setEstado(FormacionAcademica.EstadoFormacion.valueOf(dto.getEstado().toUpperCase()));
+        }
     }
 
     private FormacionResponseDTO convertirADTO(FormacionAcademica f) {
-        return new FormacionResponseDTO(
-                f.getId(),
-                f.getInstitucion(),
-                f.getTituloObtenido(),
-                f.getFechaInicio(),
-                f.getFechaFin(),
-                f.getDescripcion(),
-                f.isEnCurso(),
-                f.getUrlImagen() // Pasar al DTO de respuesta
-        );
+        FormacionResponseDTO dto = new FormacionResponseDTO();
+        dto.setId(f.getId());
+        dto.setInstitucion(f.getInstitucion());
+        dto.setTituloObtenido(f.getTituloObtenido());
+        dto.setArea(f.getArea());
+        dto.setFechaInicio(f.getFechaInicio());
+        dto.setFechaFin(f.getFechaFin());
+        dto.setDescripcion(f.getDescripcion());
+        dto.setUrlImagen(f.getUrlImagen());
+
+        // Conversión de Enum a String para el DTO
+        if (f.getNivel() != null) {
+            dto.setNivel(f.getNivel().name());
+        }
+
+        if (f.getEstado() != null) {
+            dto.setEstado(f.getEstado().name());
+        }
+
+        return dto;
     }
 }
