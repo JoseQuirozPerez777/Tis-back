@@ -7,20 +7,16 @@ import java.util.List;
 @Builder
 public class ProyectoRequestDTO {
     private String titulo;
+    private String rolProyecto; // Agregado
     private String descripcion;
-
-    // Si decides usar IDs de la entidad Tecnologia:
+    private List<String> urlsAdicionales; // Agregado
+    private List<String> urlsImagenes;
     private List<Long> tecnologiaIds;
-    // O si prefieres mantenerlo como texto simple por ahora:
-
     private String enlaceGithub;
     private String enlaceDemo;
-
-    // Corregido a Lista para coincidir con la entidad
-    private List<String> urlsImagenes;
-
+    private String fechaInicio; // Agregado (String según tu entidad)
+    private String fechaFinalizacion; // Agregado (String según tu entidad)
+    private String estadoProyecto; // Agregado
     private boolean esPublico;
-
-    // Necesario para asociar el proyecto al usuario creador
     private Long idUsuario;
 }

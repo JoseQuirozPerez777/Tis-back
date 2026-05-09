@@ -24,9 +24,15 @@ public class Proyecto {
     @Column(nullable = false, length = 150)
     private String titulo;
 
+    private String rolProyecto;
+
     @Column(length = 2000)
     private String descripcion;
 
+    @ElementCollection
+    @CollectionTable(name = "proyecto_imagenes_adicionales", joinColumns = @JoinColumn(name = "proyecto_id"))
+    @Column(name = "url_adicionales")
+    private List<String> urlsAdicionales;
     /**
      * ERROR CORREGIDO:
      * Tenías 'private String List <String>urlImagen;'.
@@ -53,6 +59,12 @@ public class Proyecto {
     private String enlaceGithub;
     private String enlaceDemo;
 
+    private String fechaInicio;
+    private String fechaFinalizacion;
+
+    private String estadoProyecto;
+
     @Column(nullable = false)
     private boolean esPublico = true;
+
 }

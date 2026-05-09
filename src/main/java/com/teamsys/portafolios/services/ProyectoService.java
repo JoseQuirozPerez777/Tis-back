@@ -6,7 +6,7 @@ import com.teamsys.portafolios.entities.Proyecto;
 import com.teamsys.portafolios.entities.Tecnologia;
 import com.teamsys.portafolios.entities.Usuario;
 import com.teamsys.portafolios.repositories.ProyectoRepository;
-import com.teamsys.portafolios.repositories.TecnologiaRepository; // Necesario
+import com.teamsys.portafolios.repositories.TecnologiaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +21,7 @@ public class ProyectoService {
     private ProyectoRepository proyectoRepository;
 
     @Autowired
-    private TecnologiaRepository tecnologiaRepository; // Inyectado para buscar tecnologías
+    private TecnologiaRepository tecnologiaRepository;
 
     public List<ProyectoResponseDTO> obtenerProyectosPorUsuario(Usuario usuario) {
         return proyectoRepository.findByUsuario(usuario)
@@ -32,16 +32,21 @@ public class ProyectoService {
 
     @Transactional
     public ProyectoResponseDTO agregarProyecto(ProyectoRequestDTO dto, Usuario usuario) {
-        // 1. Buscamos las tecnologías por los IDs enviados en el DTO
+        // Buscamos las entidades de tecnología por los IDs del DTO
         List<Tecnologia> tecnologias = tecnologiaRepository.findAllById(dto.getTecnologiaIds());
 
         Proyecto proyecto = Proyecto.builder()
                 .titulo(dto.getTitulo())
+                .rolProyecto(dto.getRolProyecto())
                 .descripcion(dto.getDescripcion())
-                .tecnologias(tecnologias) // Ahora sí coincide: List<Tecnologia>
+                .urlsAdicionales(dto.getUrlsAdicionales())
+                .urlsImagenes(dto.getUrlsImagenes())
+                .tecnologias(tecnologias)
                 .enlaceGithub(dto.getEnlaceGithub())
                 .enlaceDemo(dto.getEnlaceDemo())
-                .urlsImagenes(dto.getUrlsImagenes())
+                .fechaInicio(dto.getFechaInicio())
+                .fechaFinalizacion(dto.getFechaFinalizacion())
+                .estadoProyecto(dto.getEstadoProyecto())
                 .esPublico(dto.isEsPublico())
                 .usuario(usuario)
                 .build();
@@ -69,15 +74,19 @@ public class ProyectoService {
     }
 
     private void actualizarEntidadDesdeDTO(Proyecto proyecto, ProyectoRequestDTO dto) {
-        // 1. Convertimos IDs a objetos Tecnología
         List<Tecnologia> tecnologias = tecnologiaRepository.findAllById(dto.getTecnologiaIds());
 
         proyecto.setTitulo(dto.getTitulo());
+        proyecto.setRolProyecto(dto.getRolProyecto());
         proyecto.setDescripcion(dto.getDescripcion());
-        proyecto.setTecnologias(tecnologias); // Seteamos la lista de objetos
+        proyecto.setUrlsAdicionales(dto.getUrlsAdicionales());
+        proyecto.setUrlsImagenes(dto.getUrlsImagenes());
+        proyecto.setTecnologias(tecnologias);
         proyecto.setEnlaceGithub(dto.getEnlaceGithub());
         proyecto.setEnlaceDemo(dto.getEnlaceDemo());
-        proyecto.setUrlsImagenes(dto.getUrlsImagenes());
+        proyecto.setFechaInicio(dto.getFechaInicio());
+        proyecto.setFechaFinalizacion(dto.getFechaFinalizacion());
+        proyecto.setEstadoProyecto(dto.getEstadoProyecto());
         proyecto.setEsPublico(dto.isEsPublico());
     }
 
@@ -85,14 +94,18 @@ public class ProyectoService {
         return ProyectoResponseDTO.builder()
                 .idProyecto(p.getIdProyecto())
                 .titulo(p.getTitulo())
+                .rolProyecto(p.getRolProyecto())
                 .descripcion(p.getDescripcion())
-                // 2. Extraemos solo los IDs de las tecnologías para el DTO
+                .urlsAdicionales(p.getUrlsAdicionales())
+                .urlsImagenes(p.getUrlsImagenes())
                 .tecnologiaIds(p.getTecnologias().stream()
-                        .map(Tecnologia::getId)
+                        .map(Tecnologia::getId) // Asumiendo que el método en Tecnologia es getId()
                         .collect(Collectors.toList()))
                 .enlaceGithub(p.getEnlaceGithub())
                 .enlaceDemo(p.getEnlaceDemo())
-                .urlsImagenes(p.getUrlsImagenes())
+                .fechaInicio(p.getFechaInicio())
+                .fechaFinalizacion(p.getFechaFinalizacion())
+                .estadoProyecto(p.getEstadoProyecto())
                 .esPublico(p.isEsPublico())
                 .idUsuario(p.getUsuario().getIdUsuario())
                 .build();

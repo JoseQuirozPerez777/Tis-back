@@ -8,19 +8,16 @@ import java.util.List;
 public class ProyectoResponseDTO {
     private Long idProyecto;
     private String titulo;
+    private String rolProyecto; // Agregado
     private String descripcion;
-
-    // Podrías devolver los nombres de las tecnologías o los objetos DTO de Tecnología
+    private List<String> urlsAdicionales; // Agregado
+    private List<String> urlsImagenes;
     private List<Long> tecnologiaIds;
-
     private String enlaceGithub;
     private String enlaceDemo;
-
-    // Lista de URLs de imágenes
-    private List<String> urlsImagenes;
-
+    private String fechaInicio; // Agregado
+    private String fechaFinalizacion; // Agregado
+    private String estadoProyecto; // Agregado
     private boolean esPublico;
-
-    // Opcional: ID del dueño para navegación en el front
     private Long idUsuario;
 }
