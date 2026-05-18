@@ -29,4 +29,6 @@ public class HabilidadBlanda {
     private String descripcion;
 
     private String evidenciaUrl; // El string/URL que solicitaste
+
+    private boolean esPublico=true;
 }
