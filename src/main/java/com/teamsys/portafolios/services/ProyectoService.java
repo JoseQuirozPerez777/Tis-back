@@ -45,6 +45,8 @@ public class ProyectoService {
                 .tecnologias(tecnologias)
                 .enlaceGithub(dto.getEnlaceGithub())
                 .enlaceDemo(dto.getEnlaceDemo())
+                .destacar(dto.isDestacar()) // Agregado
+                .urlPdf(dto.getUrlPdf())     // Agregado
                 .fechaInicio(dto.getFechaInicio())
                 .fechaFinalizacion(dto.getFechaFinalizacion())
                 .estadoProyecto(dto.getEstadoProyecto())
@@ -117,6 +119,8 @@ public class ProyectoService {
         proyecto.setTecnologias(tecnologias);
         proyecto.setEnlaceGithub(dto.getEnlaceGithub());
         proyecto.setEnlaceDemo(dto.getEnlaceDemo());
+        proyecto.setDestacar(dto.isDestacar()); // Agregado
+        proyecto.setUrlPdf(dto.getUrlPdf());
         proyecto.setFechaInicio(dto.getFechaInicio());
         proyecto.setFechaFinalizacion(dto.getFechaFinalizacion());
         proyecto.setEstadoProyecto(dto.getEstadoProyecto());
@@ -136,6 +140,8 @@ public class ProyectoService {
                         .collect(Collectors.toList()))
                 .enlaceGithub(p.getEnlaceGithub())
                 .enlaceDemo(p.getEnlaceDemo())
+                .destacar(p.isDestacar()) // Agregado
+                .urlPdf(p.getUrlPdf())     // Agregado
                 .fechaInicio(p.getFechaInicio())
                 .fechaFinalizacion(p.getFechaFinalizacion())
                 .estadoProyecto(p.getEstadoProyecto())

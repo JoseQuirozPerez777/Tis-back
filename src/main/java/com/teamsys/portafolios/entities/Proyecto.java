@@ -59,6 +59,10 @@ public class Proyecto {
     private String enlaceGithub;
     private String enlaceDemo;
 
+    private boolean destacar = true;
+
+    private String urlPdf;
+
     private String fechaInicio;
     private String fechaFinalizacion;
 

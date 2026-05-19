@@ -7,17 +7,19 @@ import java.util.List;
 @Builder
 public class ProyectoRequestDTO {
     private String titulo;
-    private String rolProyecto; // Agregado
+    private String rolProyecto;
     private String descripcion;
-    private List<String> urlsAdicionales; // Agregado
+    private List<String> urlsAdicionales;
     private List<String> urlsImagenes;
     private List<Long> tecnologiaIds;
     private List<String> nuevasTecnologias;
     private String enlaceGithub;
     private String enlaceDemo;
-    private String fechaInicio; // Agregado (String según tu entidad)
-    private String fechaFinalizacion; // Agregado (String según tu entidad)
-    private String estadoProyecto; // Agregado
+    private boolean destacar; // Agregado
+    private String urlPdf;      // Agregado
+    private String fechaInicio;
+    private String fechaFinalizacion;
+    private String estadoProyecto;
     private boolean esPublico;
     private Long idUsuario;
 }
