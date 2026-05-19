@@ -69,8 +69,9 @@ public class PortafolioService {
 
         // 1. Mapear Experiencias Laborales (Extrayendo nombres de tecnologías)
         List<PortafolioCompletoDTO.ExperienciaLaboralResumenDTO> listaExperiencias = 
-            experienciaRepository.findByUsuario(usuario).stream().map(exp -> 
-                PortafolioCompletoDTO.ExperienciaLaboralResumenDTO.builder()
+            experienciaRepository.findByUsuario(usuario).stream()
+            .filter(ExperienciaLaboral::isEsPublico)
+            .map(exp -> PortafolioCompletoDTO.ExperienciaLaboralResumenDTO.builder()
                     .nombreEmpresa(exp.getNombreEmpresa())
                     .cargoPuesto(exp.getCargoPuesto())
                     .areaProfesional(exp.getAreaProfesional())
@@ -92,8 +93,9 @@ public class PortafolioService {
 
         // 2. Mapear Formación Académica
         List<PortafolioCompletoDTO.FormacionAcademicaResumenDTO> listaFormaciones = 
-            formacionRepository.findByUsuario(usuario).stream().map(form -> 
-                PortafolioCompletoDTO.FormacionAcademicaResumenDTO.builder()
+            formacionRepository.findByUsuario(usuario).stream()
+            .filter(FormacionAcademica::isEsPublico)
+            .map(form -> PortafolioCompletoDTO.FormacionAcademicaResumenDTO.builder()
                     .institucion(form.getInstitucion())
                     .tituloObtenido(form.getTituloObtenido())
                     .nivel(form.getNivel() != null ? form.getNivel().name() : null)
@@ -108,8 +110,9 @@ public class PortafolioService {
 
         // 3. Mapear Habilidades Técnicas (Extrayendo nombre de Categoria)
         List<PortafolioCompletoDTO.HabilidadTecnicaResumenDTO> listaHabTecnicas = 
-            habTecnicaRepository.findByUsuario(usuario).stream().map(ht -> 
-                PortafolioCompletoDTO.HabilidadTecnicaResumenDTO.builder()
+            habTecnicaRepository.findByUsuario(usuario).stream()
+            .filter(HabilidadTecnica::isEsPublico)
+            .map(ht -> PortafolioCompletoDTO.HabilidadTecnicaResumenDTO.builder()
                     .nombre(ht.getNombre())
                     .categoria(ht.getCategoria() != null ? ht.getCategoria().getNombre() : null)
                     .nivelDominio(ht.getNivelDominio() != null ? ht.getNivelDominio().name() : null)
@@ -121,8 +124,9 @@ public class PortafolioService {
 
         // 4. Mapear Habilidades Blandas (Extrayendo nombre de Categoria)
         List<PortafolioCompletoDTO.HabilidadBlandaResumenDTO> listaHabBlandas = 
-            habBlandaRepository.findByUsuario(usuario).stream().map(hb -> 
-                PortafolioCompletoDTO.HabilidadBlandaResumenDTO.builder()
+            habBlandaRepository.findByUsuario(usuario).stream()
+            .filter(HabilidadBlanda::isEsPublico)
+            .map(hb -> PortafolioCompletoDTO.HabilidadBlandaResumenDTO.builder()
                     .nombre(hb.getNombre())
                     .categoria(hb.getCategoria() != null ? hb.getCategoria().getNombre() : null)
                     .descripcion(hb.getDescripcion())
@@ -148,6 +152,8 @@ public class PortafolioService {
                     .fechaInicio(proy.getFechaInicio())
                     .fechaFinalizacion(proy.getFechaFinalizacion())
                     .estadoProyecto(proy.getEstadoProyecto())
+                    .urlPdf( proy.getUrlPdf())
+                    .destacar( proy.isDestacar())
                     .build()
             ).collect(Collectors.toList());
 

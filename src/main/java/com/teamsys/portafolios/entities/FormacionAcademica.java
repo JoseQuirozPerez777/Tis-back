@@ -50,6 +50,8 @@ public class FormacionAcademica {
     @Column(name = "url_imagen")
     private String urlImagen;
 
+    private boolean esPublico = true;
+
     // --- ENUMS INTERNOS ---
 
     public enum NivelAcademico {
