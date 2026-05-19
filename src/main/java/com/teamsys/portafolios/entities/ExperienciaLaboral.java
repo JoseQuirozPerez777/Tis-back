@@ -74,6 +74,7 @@ public class ExperienciaLaboral {
     @Column(name = "proyecto_relacionado_url")
     private String proyectoRelacionadoUrl;
 
+    private boolean esPublico=true;
     // --- ENUMS INTERNOS ---
 
     public enum ModalidadTrabajo {

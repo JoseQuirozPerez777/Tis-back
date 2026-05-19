@@ -38,6 +38,9 @@ public class Usuario {
     @Column(nullable = true)
     private String direccion; 
 
+    @Column(name = "enlace_publico", unique = true, nullable = true)
+    private String enlacePublico;
+
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 
     @Column(nullable = true)

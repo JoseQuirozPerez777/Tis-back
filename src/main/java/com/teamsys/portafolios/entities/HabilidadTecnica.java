@@ -36,6 +36,8 @@ public class HabilidadTecnica {
 
     private String certificadoUrl;
 
+    private boolean esPublico=true;
+
     public enum NivelDominio {
         BASICO, INTERMEDIO, AVANZADO, EXPERTO
     }

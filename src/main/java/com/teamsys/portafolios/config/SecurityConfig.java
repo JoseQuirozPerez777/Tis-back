@@ -32,7 +32,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/usuarios/registro", "/api/usuarios/login", "/api/profesiones","/api/password/email","/api/portafolios/buscar").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/proyectos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/proyectos/**","/api/enlace/profile/**", "/api/enlace/experiencias/**",
+                         "/api/enlace/proyectos/**", "/api/enlace/habilidades-blandas/**", "/api/enlace/habilidades-tecnicas/**", "/api/enlace/curriculum/**",
+                        "/api/enlace/formaciones/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
