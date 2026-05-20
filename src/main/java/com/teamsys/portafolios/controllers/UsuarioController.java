@@ -143,6 +143,7 @@ public class UsuarioController {
             perfil.setTelefono(usuario.getTelefono());
             perfil.setDireccion(usuario.getDireccion());
             perfil.setCorreo(usuario.getCorreo());
+            perfil.setDisponibilidad(usuario.getDisponibilidad());
             // 4. Si tiene profesión, extraemos solo el ID
             if (usuario.getProfesion() != null) {
                 perfil.setIdProfesion(usuario.getProfesion().getIdProfesion());

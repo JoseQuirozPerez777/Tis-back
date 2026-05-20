@@ -176,6 +176,11 @@ public class UsuarioService {
             usuarioLogueado.setBiografia(dto.getBio());
             usuarioLogueado.setTelefono(dto.getTelefono());
             usuarioLogueado.setDireccion(dto.getDireccion());
+            usuarioLogueado.setDisponibilidad(
+        dto.getDisponibilidad() != null && !dto.getDisponibilidad().isBlank()
+                ? dto.getDisponibilidad()
+                : "Disponible"
+);
 
             // 3. Actualizar relación con Profesión
             if (dto.getProfession() != null) {

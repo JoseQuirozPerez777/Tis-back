@@ -5,6 +5,7 @@ import com.teamsys.portafolios.dto.ResultadoBusquedaDTO;
 import com.teamsys.portafolios.services.PortafolioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -17,9 +18,20 @@ public class PortafolioController {
     private PortafolioService portafolioService;
 
     @PostMapping("/buscar")
-    public ResponseEntity<?> buscarPortafolios(@RequestBody BusquedaFiltrosDTO filtros) {
+    public ResponseEntity<?> buscarPortafolios(
+            @RequestBody BusquedaFiltrosDTO filtros,
+            Authentication authentication
+    ) {
         try {
-            ResultadoBusquedaDTO resultado = portafolioService.buscarPortafoliosConFiltros(filtros);
+            String correoUsuarioActual = authentication != null
+                    ? authentication.getName()
+                    : null;
+
+            ResultadoBusquedaDTO resultado = portafolioService.buscarPortafoliosConFiltros(
+                    filtros,
+                    correoUsuarioActual
+            );
+
             return ResponseEntity.ok(resultado);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(

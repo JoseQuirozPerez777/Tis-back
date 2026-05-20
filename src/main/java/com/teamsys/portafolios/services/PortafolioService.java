@@ -186,7 +186,15 @@ public class PortafolioService {
                 .build();
     }
 
-    public ResultadoBusquedaDTO buscarPortafoliosConFiltros(BusquedaFiltrosDTO filtros) {
+    public ResultadoBusquedaDTO buscarPortafoliosConFiltros(
+        BusquedaFiltrosDTO filtros,
+        String correoUsuarioActual
+) {
+
+    public ResultadoBusquedaDTO buscarPortafoliosConFiltros(
+        BusquedaFiltrosDTO filtros,
+        String correoUsuarioActual
+    ) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
         // 1. Consulta principal para los usuarios paginados
@@ -194,7 +202,7 @@ public class PortafolioService {
         Root<Usuario> usuarioRoot = cq.from(Usuario.class);
         cq.distinct(true);
 
-        List<Predicate> predicates = construirPredicados(filtros, cb, cq, usuarioRoot);
+        List<Predicate> predicates = construirPredicados(filtros, cb, cq, usuarioRoot, correoUsuarioActual);
         cq.where(predicates.toArray(new Predicate[0]));
 
         aplicarOrdenamiento(filtros.getOrdenarPor(), cb, cq, usuarioRoot);
@@ -216,7 +224,7 @@ public class PortafolioService {
         Root<Usuario> countRoot = countCq.from(Usuario.class);
         countCq.distinct(true);
 
-        List<Predicate> countPredicates = construirPredicados(filtros, cb, countCq, countRoot);
+        List<Predicate> countPredicates = construirPredicados(filtros, cb, countCq, countRoot, correoUsuarioActual);
         countCq.select(cb.countDistinct(countRoot)).where(countPredicates.toArray(new Predicate[0]));
         long totalResultados = entityManager.createQuery(countCq).getSingleResult();
 
@@ -231,8 +239,19 @@ public class PortafolioService {
         return new ResultadoBusquedaDTO(totalResultados, paginaActual, limiteMax, totalPaginas, listaTarjetas);
     }
 
-    private List<Predicate> construirPredicados(BusquedaFiltrosDTO filtros, CriteriaBuilder cb, CriteriaQuery<?> cq, Root<Usuario> root) {
+    private List<Predicate> construirPredicados(
+        BusquedaFiltrosDTO filtros,
+        CriteriaBuilder cb,
+        CriteriaQuery<?> cq,
+        Root<Usuario> root,
+        String correoUsuarioActual
+        ) {
         List<Predicate> predicates = new ArrayList<>();
+
+        if (correoUsuarioActual != null && !correoUsuarioActual.isBlank()) {
+        predicates.add(cb.notEqual(root.get("correo"), correoUsuarioActual));
+        }
+        
 
         // --- FILTRO GENERAL (BUSCAR) ---
         if (filtros.getBuscar() != null && !filtros.getBuscar().trim().isEmpty()) {
@@ -270,7 +289,11 @@ public class PortafolioService {
 
             subqueryForm.select(subqueryFormRoot.get("usuario").get("idUsuario"))
                     .where(cb.or(
+<<<<<<< Updated upstream
                             cb.like(cb.lower(subqueryFormRoot.get("institucion")),formacionLike),
+=======
+                            cb.like(cb.lower(subqueryFormRoot.get("institucion")), formacionLike),
+>>>>>>> Stashed changes
                             cb.like(cb.lower(subqueryFormRoot.get("area")), formacionLike),
                             cb.like(cb.lower(subqueryFormRoot.get("tituloObtenido")), formacionLike),
                             cb.like(cb.lower(subqueryFormRoot.get("nivel").as(String.class)), formacionLike)
@@ -307,7 +330,7 @@ public class PortafolioService {
             Expression<LocalDate> fechaInicioExp = subqueryExpMinRoot.get("fechaInicio");
 
             // 2. Calculamos la diferencia de días usando la función nativa/dialecto
-            Expression<Long> diasEntre = cb.function("date_diff", Long.class,
+            Expression<Long> diasEntre = cb.function("datediff", Long.class,
                     cb.literal("DAY"),
                     fechaInicioExp,
                     coalesceFechaFin

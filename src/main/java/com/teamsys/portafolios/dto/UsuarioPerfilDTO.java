@@ -15,4 +15,5 @@ public class UsuarioPerfilDTO {
     private String telefono;
     private String direccion;
     private String correo;
+    private String disponibilidad;
 }
