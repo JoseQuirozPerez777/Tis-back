@@ -28,4 +28,13 @@ public class PortafolioPublicoController {
         PortafolioCompletoDTO portafolio = portafolioService.compilarPortafolio(usuario);
         return ResponseEntity.ok(portafolio);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PortafolioCompletoDTO> obtenerPortafolioPorId(@PathVariable Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        PortafolioCompletoDTO portafolio = portafolioService.compilarPortafolio(usuario);
+        return ResponseEntity.ok(portafolio);
+    }
 }
