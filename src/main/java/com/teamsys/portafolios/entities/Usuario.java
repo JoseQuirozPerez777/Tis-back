@@ -55,6 +55,8 @@ public class Usuario {
     )
     private Set<Rol> roles;
 
+    private LocalDateTime fechaUltimoLogin;
+
     private int intentosFallidos = 0;
     private LocalDateTime fechaUltimoIntentoFallido;
     private LocalDateTime fechaBloqueo;

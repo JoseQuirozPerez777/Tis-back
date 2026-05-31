@@ -16,4 +16,5 @@ public class HabilidadBlandaRequestDTO {
 
     private String descripcion;
 
+    private boolean visiblePublico = true;
 }

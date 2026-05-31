@@ -49,6 +49,7 @@ public class HabilidadBlandaService {
         entidad.setNombre(dto.getNombre());
         entidad.setEvidenciaUrl(dto.getEvidenciaUrl());
         entidad.setDescripcion(dto.getDescripcion());
+        entidad.setEsPublico(dto.isVisiblePublico());
 
         Categoria contexto = categoriaRepository.findById(dto.getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("Contexto (Categoría) no encontrado"));

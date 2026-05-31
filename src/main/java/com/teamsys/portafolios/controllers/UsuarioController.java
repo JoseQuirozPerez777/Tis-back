@@ -1,9 +1,12 @@
 package com.teamsys.portafolios.controllers;
 
 import com.teamsys.portafolios.dto.*;
+import com.teamsys.portafolios.entities.BitacoraLogin;
 import com.teamsys.portafolios.entities.Rol;
 import com.teamsys.portafolios.entities.Usuario;
+import com.teamsys.portafolios.repositories.BitacoraLoginRepository;
 import com.teamsys.portafolios.repositories.UsuarioRepository;
+import com.teamsys.portafolios.services.EnlacePublicoService;
 import com.teamsys.portafolios.services.UsuarioService;
 import com.teamsys.portafolios.security.JwtUtil; // Asegúrate de importar tu JwtUtil
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -24,6 +29,12 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private BitacoraLoginRepository bitacoraLoginRepository;
+
+    @Autowired
+    private EnlacePublicoService enlacePublicoService;
 
     @Autowired
     private JwtUtil jwtUtil; // Inyectamos el motor de JWT
@@ -62,7 +73,7 @@ public class UsuarioController {
     // Dentro de UsuarioController.java
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginDTO) {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginDTO,jakarta.servlet.http.HttpServletRequest request) {
         try {
             // 1. Validar identidad
             Usuario usuario = usuarioService.autenticar(loginDTO.getCorreo(), loginDTO.getPassword());
@@ -82,6 +93,15 @@ public class UsuarioController {
                     usuario.getCorreo(),
                     rolesNombres
             );
+            LocalDateTime ahora = LocalDateTime.now();
+            usuario.setFechaUltimoLogin(ahora);
+            usuarioRepository.save(usuario);
+
+            bitacoraLoginRepository.save(BitacoraLogin.builder()
+                    .usuario(usuario)
+                    .fechaLogin(ahora)
+                    .ipOrigen(request.getRemoteAddr()) // Captura la IP del cliente
+                    .build());
 
             return ResponseEntity.ok(new UsuarioRespuestaDTO(token, info));
 
@@ -191,6 +211,28 @@ public class UsuarioController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(java.util.Map.of("message", "Error interno: " + e.getMessage()));
+        }
+    }
+
+    // Obtener el total numérico de visitas
+    @GetMapping("/mis-visitas/total")
+    public ResponseEntity<Long> obtenerTotalVisitas(Authentication authentication) {
+        try {
+            long total = enlacePublicoService.obtenerTotalVisitas(authentication.getName());
+            return ResponseEntity.ok(total);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(0L);
+        }
+    }
+
+    // Obtener la lista detallada de usuarios que lo visitaron
+    @GetMapping("/mis-visitas/historial")
+    public ResponseEntity<List<VistaPerfilDTO>> obtenerHistorialVisitas(Authentication authentication) {
+        try {
+            List<VistaPerfilDTO> historial = enlacePublicoService.obtenerHistorialVisitas(authentication.getName());
+            return ResponseEntity.ok(historial);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
         }
     }
 }

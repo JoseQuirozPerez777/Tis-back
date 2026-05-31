@@ -21,4 +21,6 @@ public class HabilidadTecnicaRequestDTO {
     private String descripcion;
 
     private String certificadoUrl;
+
+    private boolean visiblePublico = true;
 }

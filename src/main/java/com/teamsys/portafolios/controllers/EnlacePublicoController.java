@@ -38,11 +38,16 @@ public class EnlacePublicoController {
     }
 
     // 2. NUEVO ENDPOINT: Recibe la parte final de la URL, decodifica el correo y retorna el perfil
-    // Ejemplo de llamada: GET /api/enlace/decodificar/juan-carlos-perez-amF2YUB0ZXN0LmNvbQ
     @GetMapping("/profile/{textoUrl}")
-    public ResponseEntity<?> obtenerUsuarioPorUrlDecodificada(@PathVariable String textoUrl) {
+    public ResponseEntity<?> obtenerUsuarioPorUrlDecodificada(@PathVariable String textoUrl, Authentication authentication) {
         try {
+            // 1. Obtener los datos del perfil
             UsuarioPublicoDTO usuarioDto = enlacePublicoService.obtenerPerfilPorUrlMapeada(textoUrl);
+
+            // 2. Registrar la visita de forma segura
+            String correoVisitante = (authentication != null) ? authentication.getName() : null;
+            enlacePublicoService.registrarVisita(textoUrl, correoVisitante);
+
             return ResponseEntity.ok(usuarioDto);
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());

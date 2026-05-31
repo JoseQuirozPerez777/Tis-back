@@ -56,6 +56,7 @@ public class HabilidadTecnicaService {
         entidad.setAnosExperiencia(dto.getAnosExperiencia());
         entidad.setDescripcion(dto.getDescripcion());
         entidad.setCertificadoUrl(dto.getCertificadoUrl());
+        entidad.setEsPublico(dto.isVisiblePublico());
 
         Categoria cat = categoriaRepository.findById(dto.getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("Categoría técnica no encontrada"));
