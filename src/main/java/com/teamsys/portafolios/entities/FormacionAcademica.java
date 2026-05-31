@@ -59,9 +59,9 @@ public class FormacionAcademica {
         SECUNDARIA,
         TECNICO,
         LICENCIATURA,
-        DIPLOMADO,
         MAESTRIA,
         DOCTORADO,
+        DIPLOMADO,
         CURSOS
     }
 
