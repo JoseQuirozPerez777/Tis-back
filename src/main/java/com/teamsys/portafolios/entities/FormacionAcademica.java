@@ -55,11 +55,14 @@ public class FormacionAcademica {
     // --- ENUMS INTERNOS ---
 
     public enum NivelAcademico {
+        PRIMARIA,
+        SECUNDARIA,
         TECNICO,
         LICENCIATURA,
         DIPLOMADO,
         MAESTRIA,
-        DOCTORADO
+        DOCTORADO,
+        CURSOS
     }
 
     public enum EstadoFormacion {
