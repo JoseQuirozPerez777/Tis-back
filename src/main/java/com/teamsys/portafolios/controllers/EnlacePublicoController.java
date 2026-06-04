@@ -1,9 +1,6 @@
 package com.teamsys.portafolios.controllers;
 
-import com.teamsys.portafolios.dto.EnlacePublicoDTO;
-import com.teamsys.portafolios.dto.LikePerfilDTO;
-import com.teamsys.portafolios.dto.PortafolioCompletoDTO;
-import com.teamsys.portafolios.dto.UsuarioPublicoDTO;
+import com.teamsys.portafolios.dto.*;
 import com.teamsys.portafolios.entities.LikePerfil;
 import com.teamsys.portafolios.entities.Usuario;
 import com.teamsys.portafolios.repositories.UsuarioRepository;
@@ -11,6 +8,7 @@ import com.teamsys.portafolios.services.EnlacePublicoService;
 
 import java.util.List;
 
+import com.teamsys.portafolios.services.VisibilidadPerfilService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -46,7 +44,36 @@ public class EnlacePublicoController {
             // 1. Obtener los datos del perfil
             UsuarioPublicoDTO usuarioDto = enlacePublicoService.obtenerPerfilPorUrlMapeada(textoUrl);
 
-            // 2. Registrar la visita de forma segura
+            // 2. Buscar al usuario en la BD usando el correo del DTO para obtener sus "ojitos" de privacidad
+            Usuario usuario = usuarioRepository.findByCorreo(usuarioDto.getCorreo())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            VisibilidadPerfilService visibilidadPerfilService = new VisibilidadPerfilService();
+
+            // 3. Obtener la configuración de visibilidad actual
+            VisibilidadPerfilDTO visibilidad = visibilidadPerfilService.obtenerVisibilidadConfig(usuario);
+
+            // 4. Filtrar los datos en el controlador antes de responder al Front-end (false = oculto)
+            if (!visibilidad.isNombreUsr()) {
+                usuarioDto.setNombre("Usuario Privado");
+            }
+            if (!visibilidad.isCorreoUsr()) {
+                usuarioDto.setCorreo(null);
+            }
+            if (!visibilidad.isBiografiaUsr()) {
+                usuarioDto.setBiografia(null);
+            }
+            if (!visibilidad.isTelefonoUsr()) {
+                usuarioDto.setTelefono(null);
+            }
+            if (!visibilidad.isDireccionUsr()) {
+                usuarioDto.setDireccion(null);
+            }
+            if (!visibilidad.isProfesionUsr()) {
+                usuarioDto.setNombreProfesion(null);
+            }
+
+            // 5. Registrar la visita de forma segura (Se corrigió a tu método original registrarVisita)
             String correoVisitante = (authentication != null) ? authentication.getName() : null;
             enlacePublicoService.registrarVisita(textoUrl, correoVisitante);
 
