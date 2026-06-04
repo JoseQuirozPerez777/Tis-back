@@ -1,8 +1,10 @@
 package com.teamsys.portafolios.controllers;
 
 import com.teamsys.portafolios.dto.EnlacePublicoDTO;
+import com.teamsys.portafolios.dto.LikePerfilDTO;
 import com.teamsys.portafolios.dto.PortafolioCompletoDTO;
 import com.teamsys.portafolios.dto.UsuarioPublicoDTO;
+import com.teamsys.portafolios.entities.LikePerfil;
 import com.teamsys.portafolios.entities.Usuario;
 import com.teamsys.portafolios.repositories.UsuarioRepository;
 import com.teamsys.portafolios.services.EnlacePublicoService;
@@ -116,6 +118,90 @@ public class EnlacePublicoController {
             return ResponseEntity.status(404).body(e.getMessage());
         }
     }
+
+    @PostMapping("/profile/{textoUrl}/like")
+    public ResponseEntity<?> darLikeAlPerfil(@PathVariable String textoUrl, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Debe estar autenticado para dar un 'Like'.");
+        }
+
+        try {
+            String correoUsuarioQueDaLike = authentication.getName();
+            enlacePublicoService.registrarLike(textoUrl, correoUsuarioQueDaLike);
+            return ResponseEntity.ok().body(java.util.Map.of("message", "Like registrado correctamente."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 2. Obtener el listado de likes de un perfil de forma pública usando el textoUrl
+    @GetMapping("/profile/{textoUrl}/likes")
+    public ResponseEntity<?> obtenerLikesDelPerfil(@PathVariable String textoUrl) {
+        try {
+            List<LikePerfilDTO> likesDto = enlacePublicoService.obtenerLikesPorUrl(textoUrl);
+            return ResponseEntity.ok(likesDto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    // 3. Obtener el listado de likes de MI propio perfil (Autenticado)
+    @GetMapping("/mis-likes")
+    public ResponseEntity<?> obtenerMisLikes(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("No autorizado");
+        }
+        try {
+            Usuario usuario = getUsuarioAutenticado(authentication);
+            List<LikePerfilDTO> likesDto = enlacePublicoService.obtenerLikesPorUsuario(usuario);
+            return ResponseEntity.ok(likesDto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 4. Obtener el TOTAL numérico de likes de forma pública usando textoUrl
+    @GetMapping("/profile/{textoUrl}/likes/total")
+    public ResponseEntity<?> obtenerTotalLikesDelPerfil(@PathVariable String textoUrl) {
+        try {
+            long totalLikes = enlacePublicoService.obtenerTotalLikesPorUrl(textoUrl);
+            return ResponseEntity.ok(java.util.Map.of("totalLikes", totalLikes));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    // 5. Obtener el TOTAL numérico de likes de MI propio perfil (Autenticado)
+    @GetMapping("/mis-likes/total")
+    public ResponseEntity<?> obtenerTotalMisLikes(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("No autorizado");
+        }
+        try {
+            Usuario usuario = getUsuarioAutenticado(authentication);
+            long totalLikes = enlacePublicoService.obtenerTotalLikesPorUsuario(usuario);
+            return ResponseEntity.ok(java.util.Map.of("totalLikes", totalLikes));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Nuevo endpoint para eliminar el LIKE
+    @DeleteMapping("/profile/{textoUrl}/like")
+    public ResponseEntity<?> quitarLikeAlPerfil(@PathVariable String textoUrl, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Debe estar autenticado para realizar esta acción.");
+        }
+
+        try {
+            String correoUsuarioQueQuitaLike = authentication.getName();
+            enlacePublicoService.eliminarLike(textoUrl, correoUsuarioQueQuitaLike);
+            return ResponseEntity.ok().body(java.util.Map.of("message", "Like eliminado correctamente."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 
     private Usuario getUsuarioAutenticado(Authentication auth) {
         return usuarioRepository.findByCorreo(auth.getName())

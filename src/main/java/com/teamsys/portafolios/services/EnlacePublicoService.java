@@ -1,9 +1,6 @@
 package com.teamsys.portafolios.services;
 
-import com.teamsys.portafolios.dto.EnlacePublicoDTO;
-import com.teamsys.portafolios.dto.PortafolioCompletoDTO;
-import com.teamsys.portafolios.dto.UsuarioPublicoDTO;
-import com.teamsys.portafolios.dto.VistaPerfilDTO;
+import com.teamsys.portafolios.dto.*;
 import com.teamsys.portafolios.entities.*;
 import com.teamsys.portafolios.repositories.*;
 
@@ -61,6 +58,8 @@ public class EnlacePublicoService {
     @Autowired
     private VistaPerfilRepository vistaPerfilRepository;
 
+    @Autowired
+    private LikePerfilRepository likePerfilRepository;
 // ==========================================
 // MÉTODOS DE VISITAS DE PERFIL
 // ==========================================
@@ -408,6 +407,93 @@ public class EnlacePublicoService {
         } catch (Exception e) {
             throw new RuntimeException("Error al obtener el currículum oficial: " + e.getMessage());
         }
+    }
+// ==========================================
+    //          MÉTODOS DE LIKES
+    // ==========================================
+
+    public void registrarLike(String textoUrl, String correoUsuarioQueDaLike) {
+        // Corrección del bug: se extrae el correo de la URL y se busca al usuario directamente
+        String correoDecodificado = obtenerCorreo(textoUrl);
+        Usuario perfilDestino = usuarioRepository.findByCorreo(correoDecodificado)
+                .orElseThrow(() -> new RuntimeException("Perfil de destino no encontrado"));
+
+        Usuario usuarioLike = usuarioRepository.findByCorreo(correoUsuarioQueDaLike)
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+
+        if (perfilDestino.getIdUsuario().equals(usuarioLike.getIdUsuario())) {
+            throw new RuntimeException("No puedes darle 'Like' a tu propio perfil");
+        }
+
+        boolean yaTieneLike = likePerfilRepository.existsByPerfilAndUsuarioLike(perfilDestino, usuarioLike);
+        if (yaTieneLike) {
+            throw new RuntimeException("Ya le has dado 'Like' a este perfil");
+        }
+
+        LikePerfil nuevoLike = LikePerfil.builder()
+                .perfil(perfilDestino)
+                .usuarioLike(usuarioLike)
+                .fechaLike(LocalDateTime.now())
+                .build();
+
+        likePerfilRepository.save(nuevoLike);
+    }
+
+    // Obtener lista de likes mediante la URL pública
+    public List<LikePerfilDTO> obtenerLikesPorUrl(String textoUrl) {
+        String correoDecodificado = obtenerCorreo(textoUrl);
+        Usuario perfil = usuarioRepository.findByCorreo(correoDecodificado)
+                .orElseThrow(() -> new RuntimeException("Perfil no encontrado"));
+        return obtenerLikesPorUsuario(perfil);
+    }
+
+    // Obtener lista de likes pasando la entidad Usuario directamente
+    public List<LikePerfilDTO> obtenerLikesPorUsuario(Usuario perfil) {
+        List<LikePerfil> likes = likePerfilRepository.findByPerfilOrderByFechaLikeDesc(perfil);
+
+        return likes.stream().map(like -> LikePerfilDTO.builder()
+                .nombre(like.getUsuarioLike().getNombre())
+                .foto(like.getUsuarioLike().getFoto())
+                // Ajustado al getter real de tu entidad Usuario: getNombreProfesion()
+                .profesion(like.getUsuarioLike().getProfesion() != null ? like.getUsuarioLike().getProfesion().getNombreProfesion() : null)
+                .fechaLike(like.getFechaLike())
+                .build()
+        ).toList();
+    }
+
+    // Contar total de likes mediante la URL pública
+    public long obtenerTotalLikesPorUrl(String textoUrl) {
+        String correoDecodificado = obtenerCorreo(textoUrl);
+        Usuario perfil = usuarioRepository.findByCorreo(correoDecodificado)
+                .orElseThrow(() -> new RuntimeException("Perfil no encontrado"));
+        return obtenerTotalLikesPorUsuario(perfil);
+    }
+
+    // Contar total de likes pasando la entidad Usuario directamente
+    public long obtenerTotalLikesPorUsuario(Usuario perfil) {
+        return likePerfilRepository.countByPerfil(perfil);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void eliminarLike(String textoUrl, String correoUsuarioQueQuitaLike) {
+        String correoDecodificado = obtenerCorreo(textoUrl);
+        Usuario perfilDestino = usuarioRepository.findByCorreo(correoDecodificado)
+                .orElseThrow(() -> new RuntimeException("Perfil de destino no encontrado"));
+
+        Usuario usuarioLike = usuarioRepository.findByCorreo(correoUsuarioQueQuitaLike)
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+
+        // Buscamos el registro exacto de la combinación perfil <-> usuario
+        // Nota: Si no tienes el método findByPerfilAndUsuarioLike en tu LikePerfilRepository,
+        // puedes declararlo rápidamente o usar una query personalizada.
+        java.util.Optional<LikePerfil> likeExistente = likePerfilRepository
+                .findByPerfilAndUsuarioLike(perfilDestino, usuarioLike);
+
+        if (likeExistente.isEmpty()) {
+            throw new RuntimeException("No has dado 'Like' a este perfil todavía.");
+        }
+
+        likePerfilRepository.delete(likeExistente.get());
     }
 
     @Data @Builder
