@@ -24,8 +24,16 @@ public interface LikePerfilRepository extends JpaRepository<LikePerfil, Long> {
             @Param("usuarioLike") Usuario usuarioLike
     );
 
-    // NUEVO: Necesario para buscar y eliminar el like cuando hagan un "Unlike"
-    Optional<LikePerfil> findByPerfilAndUsuarioLike(Usuario perfil, Usuario usuarioLike);
+    @Query("""
+        SELECT lp
+        FROM LikePerfil lp
+        WHERE lp.perfil = :perfil
+        AND lp.usuarioLike = :usuarioLike
+    """)
+    Optional<LikePerfil> findByPerfilAndUsuarioLike(
+            @Param("perfil") Usuario perfil,
+            @Param("usuarioLike") Usuario usuarioLike
+    );
 
     List<LikePerfil> findByPerfilOrderByFechaLikeDesc(Usuario perfil);
 
