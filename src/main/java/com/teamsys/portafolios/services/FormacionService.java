@@ -51,6 +51,10 @@ public class FormacionService {
         f.setFechaFin(dto.getFechaFin());
         f.setDescripcion(dto.getDescripcion());
         f.setUrlImagen(dto.getUrlImagen());
+        
+        if (dto.getEsPublico() != null) {
+            f.setEsPublico(dto.getEsPublico());
+        }
 
         // Conversión de String a Enum (Nivel)
         if (dto.getNivel() != null) {
@@ -73,6 +77,7 @@ public class FormacionService {
         dto.setFechaFin(f.getFechaFin());
         dto.setDescripcion(f.getDescripcion());
         dto.setUrlImagen(f.getUrlImagen());
+        dto.setEsPublico(f.isEsPublico());
 
         // Conversión de Enum a String para el DTO
         if (f.getNivel() != null) {
