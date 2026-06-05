@@ -4,11 +4,13 @@ import com.teamsys.portafolios.dto.*;
 import com.teamsys.portafolios.entities.BitacoraLogin;
 import com.teamsys.portafolios.entities.Rol;
 import com.teamsys.portafolios.entities.Usuario;
+import com.teamsys.portafolios.entities.VisibilidadPerfil;
 import com.teamsys.portafolios.repositories.BitacoraLoginRepository;
 import com.teamsys.portafolios.repositories.UsuarioRepository;
 import com.teamsys.portafolios.services.EnlacePublicoService;
 import com.teamsys.portafolios.services.UsuarioService;
 import com.teamsys.portafolios.security.JwtUtil; // Asegúrate de importar tu JwtUtil
+import com.teamsys.portafolios.services.VisibilidadPerfilService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -156,6 +158,8 @@ public class UsuarioController {
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             // 3. Mapear manualmente al DTO
+            VisibilidadPerfilService visibilidadPerfilService = new VisibilidadPerfilService();
+            VisibilidadPerfilDTO visibilidadPerfilDTO = visibilidadPerfilService.obtenerVisibilidadConfig(usuario);
             UsuarioPerfilDTO perfil = new UsuarioPerfilDTO();
             perfil.setNombre(usuario.getNombre());
             perfil.setBiografia(usuario.getBiografia());
@@ -164,12 +168,15 @@ public class UsuarioController {
             perfil.setDireccion(usuario.getDireccion());
             perfil.setCorreo(usuario.getCorreo());
             perfil.setDisponibilidad(usuario.getDisponibilidad());
+
             // 4. Si tiene profesión, extraemos solo el ID
             if (usuario.getProfesion() != null) {
                 perfil.setIdProfesion(usuario.getProfesion().getIdProfesion());
             } else {
                 perfil.setIdProfesion(null);
             }
+
+            perfil.setConfiguracionVisibilidad(visibilidadPerfilDTO);
 
             return ResponseEntity.ok(perfil);
 
@@ -235,4 +242,5 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+
 }

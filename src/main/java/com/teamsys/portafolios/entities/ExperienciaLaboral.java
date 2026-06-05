@@ -41,7 +41,7 @@ public class ExperienciaLaboral {
     private LocalDate fechaFin;
 
     @Column(name = "actualmente_trabajo_aqui")
-    private boolean actualmenteTrabajoAqui;
+    private boolean actualmenteTrabajoAqui = false;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "modalidad_trabajo")
@@ -74,6 +74,7 @@ public class ExperienciaLaboral {
     @Column(name = "proyecto_relacionado_url")
     private String proyectoRelacionadoUrl;
 
+    @Column(name = "es_publico")
     private boolean esPublico=true;
     // --- ENUMS INTERNOS ---
 

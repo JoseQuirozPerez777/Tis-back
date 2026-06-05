@@ -1,5 +1,6 @@
 package com.teamsys.portafolios.repositories;
 
+import com.teamsys.portafolios.entities.Curriculum;
 import com.teamsys.portafolios.entities.Usuario;
 import com.teamsys.portafolios.entities.VistaPerfil;
 import org.springframework.data.jpa.repository.JpaRepository;
