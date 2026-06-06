@@ -159,7 +159,7 @@ public class UsuarioController {
 
             // 3. Mapear manualmente al DTO
             VisibilidadPerfilService visibilidadPerfilService = new VisibilidadPerfilService();
-            VisibilidadPerfilDTO visibilidadPerfilDTO = visibilidadPerfilService.obtenerVisibilidadConfig(usuario);
+            //VisibilidadPerfilDTO visibilidadPerfilDTO = visibilidadPerfilService.obtenerVisibilidadConfig(usuario);
             UsuarioPerfilDTO perfil = new UsuarioPerfilDTO();
             perfil.setNombre(usuario.getNombre());
             perfil.setBiografia(usuario.getBiografia());
@@ -176,7 +176,7 @@ public class UsuarioController {
                 perfil.setIdProfesion(null);
             }
 
-            perfil.setConfiguracionVisibilidad(visibilidadPerfilDTO);
+            //perfil.setConfiguracionVisibilidad(visibilidadPerfilDTO);
 
             return ResponseEntity.ok(perfil);
 

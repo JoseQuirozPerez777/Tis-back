@@ -13,5 +13,5 @@ public class VisibilidadPerfilDTO {
     private boolean telefonoUsr;
     private boolean direccionUsr;
     private boolean profesionUsr;
-    private boolean universidadUsr;
+    //private boolean universidadUsr;
 }

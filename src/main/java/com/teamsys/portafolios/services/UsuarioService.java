@@ -3,14 +3,8 @@ package com.teamsys.portafolios.services;
 import com.teamsys.portafolios.dto.PasswordRequestDTO;
 import com.teamsys.portafolios.dto.UsuarioInformacionBasicaDTO;
 import com.teamsys.portafolios.dto.UsuarioRegistroDTO;
-import com.teamsys.portafolios.entities.CodigoVerificacion;
-import com.teamsys.portafolios.entities.Rol;
-import com.teamsys.portafolios.entities.Usuario;
-import com.teamsys.portafolios.entities.Profesion;
-import com.teamsys.portafolios.repositories.CodigoVerificacionRepository;
-import com.teamsys.portafolios.repositories.RolRepository;
-import com.teamsys.portafolios.repositories.UsuarioRepository;
-import com.teamsys.portafolios.repositories.ProfesionRepository;
+import com.teamsys.portafolios.entities.*;
+import com.teamsys.portafolios.repositories.*;
 import com.teamsys.portafolios.security.JwtUtil;
 import com.teamsys.portafolios.utils.ValidadorDatos;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +38,9 @@ public class UsuarioService {
 
     @Autowired
     private CodigoVerificacionRepository codigoRepository;
+
+    @Autowired
+    private VisibilidadPerfilRepository visibilidadPerfilRepository;
 
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -124,7 +121,14 @@ public class UsuarioService {
         usuario.setFechaRegistro(java.time.LocalDateTime.now());
 
         // 7. Persistencia en MySQL
-        return usuarioRepository.save(usuario);
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        VisibilidadPerfil visibilidad = new VisibilidadPerfil();
+        visibilidad.setUsuario(usuarioGuardado);
+
+        visibilidadPerfilRepository.save(visibilidad);
+
+        return usuarioGuardado;
     }
 
     // Dentro de UsuarioService.java

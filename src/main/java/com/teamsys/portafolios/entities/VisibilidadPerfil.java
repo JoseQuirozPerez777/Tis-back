@@ -25,5 +25,5 @@ public class VisibilidadPerfil {
     private boolean telefonoUsr = true;
     private boolean direccionUsr = true;
     private boolean profesionUsr = true;
-    private boolean universidadUsr = true; // Aplica para estudios/formación en general
+    //private boolean universidadUsr = true; // Aplica para estudios/formación en general
 }

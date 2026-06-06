@@ -26,7 +26,6 @@ public class VisibilidadPerfilService {
                                 .telefonoUsr(true)
                                 .direccionUsr(true)
                                 .profesionUsr(true)
-                                .universidadUsr(true)
                                 .build()
                 ));
 
@@ -37,7 +36,6 @@ public class VisibilidadPerfilService {
                 .telefonoUsr(config.isTelefonoUsr())
                 .direccionUsr(config.isDireccionUsr())
                 .profesionUsr(config.isProfesionUsr())
-                .universidadUsr(config.isUniversidadUsr())
                 .build();
     }
 
@@ -53,7 +51,6 @@ public class VisibilidadPerfilService {
         config.setTelefonoUsr(dto.isTelefonoUsr());
         config.setDireccionUsr(dto.isDireccionUsr());
         config.setProfesionUsr(dto.isProfesionUsr());
-        config.setUniversidadUsr(dto.isUniversidadUsr());
 
         visibilidadPerfilRepository.save(config);
     }

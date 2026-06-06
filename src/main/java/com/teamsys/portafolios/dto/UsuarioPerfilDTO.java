@@ -16,5 +16,5 @@ public class UsuarioPerfilDTO {
     private String direccion;
     private String correo;
     private String disponibilidad;
-    private VisibilidadPerfilDTO configuracionVisibilidad;
+    //private VisibilidadPerfilDTO configuracionVisibilidad;
 }
