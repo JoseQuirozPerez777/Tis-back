@@ -18,4 +18,5 @@ public class FormacionResponseDTO {
     private String descripcion;
     private String estado;
     private String urlImagen;
+    private Boolean esPublico;
 }

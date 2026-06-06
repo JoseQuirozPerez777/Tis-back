@@ -300,6 +300,7 @@ public class EnlacePublicoService {
             List<FormacionAcademica> formaciones = formacionRepository.findByUsuario(usuario);
 
             return formaciones.stream()
+                    .filter(FormacionAcademica::isEsPublico)
                     .map(form -> PortafolioCompletoDTO.FormacionAcademicaResumenDTO.builder()
                             .institucion(form.getInstitucion())
                             .tituloObtenido(form.getTituloObtenido())

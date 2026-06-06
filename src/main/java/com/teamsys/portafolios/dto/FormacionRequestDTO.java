@@ -17,4 +17,5 @@ public class FormacionRequestDTO {
     private String descripcion;
     private String estado; // Ej: "EN_CURSO", "FINALIZADO", "INCOMPLETO"
     private String urlImagen;
+    private Boolean esPublico;
 }
