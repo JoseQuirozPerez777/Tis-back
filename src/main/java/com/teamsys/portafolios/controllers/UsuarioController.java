@@ -41,6 +41,9 @@ public class UsuarioController {
     @Autowired
     private JwtUtil jwtUtil; // Inyectamos el motor de JWT
 
+    @Autowired
+    private VisibilidadPerfilService visibilidadPerfilService;
+
     @PostMapping("/registro")
     public ResponseEntity<?> registrarUsuario(@RequestBody UsuarioRegistroDTO registroDTO) {
         try {
@@ -158,7 +161,7 @@ public class UsuarioController {
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             // 3. Mapear manualmente al DTO
-            VisibilidadPerfilService visibilidadPerfilService = new VisibilidadPerfilService();
+            //VisibilidadPerfilService visibilidadPerfilService = new VisibilidadPerfilService();
             //VisibilidadPerfilDTO visibilidadPerfilDTO = visibilidadPerfilService.obtenerVisibilidadConfig(usuario);
             UsuarioPerfilDTO perfil = new UsuarioPerfilDTO();
             perfil.setNombre(usuario.getNombre());

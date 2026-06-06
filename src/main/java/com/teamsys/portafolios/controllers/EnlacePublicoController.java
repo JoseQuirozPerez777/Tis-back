@@ -23,6 +23,8 @@ public class EnlacePublicoController {
     private EnlacePublicoService enlacePublicoService;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private VisibilidadPerfilService visibilidadPerfilService;
 
     // 1. Generar la URL reversible basado en la sesión
     @PostMapping("/mi-enlace-publico")
@@ -48,7 +50,7 @@ public class EnlacePublicoController {
             Usuario usuario = usuarioRepository.findByCorreo(usuarioDto.getCorreo())
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            VisibilidadPerfilService visibilidadPerfilService = new VisibilidadPerfilService();
+            //VisibilidadPerfilService visibilidadPerfilService = new VisibilidadPerfilService();
 
             // 3. Obtener la configuración de visibilidad actual
             VisibilidadPerfilDTO visibilidad = visibilidadPerfilService.obtenerVisibilidadConfig(usuario);
