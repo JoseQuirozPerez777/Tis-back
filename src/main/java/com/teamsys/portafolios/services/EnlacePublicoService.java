@@ -413,7 +413,7 @@ public class EnlacePublicoService {
     //          MÉTODOS DE LIKES
     // ==========================================
 
-    public void registrarLike(String textoUrl, String correoUsuarioQueDaLike) {
+    public String registrarLike(String textoUrl, String correoUsuarioQueDaLike) {
         // Corrección del bug: se extrae el correo de la URL y se busca al usuario directamente
         String correoDecodificado = obtenerCorreo(textoUrl);
         Usuario perfilDestino = usuarioRepository.findByCorreo(correoDecodificado)
@@ -429,7 +429,7 @@ public class EnlacePublicoService {
         boolean yaTieneLike = likePerfilRepository.existsByPerfilAndUsuarioLike(perfilDestino, usuarioLike);
         if (yaTieneLike) {
             eliminarLike(perfilDestino,usuarioLike);
-            return;
+            return "eliminado";
         }
 
         LikePerfil nuevoLike = LikePerfil.builder()
@@ -439,6 +439,7 @@ public class EnlacePublicoService {
                 .build();
 
         likePerfilRepository.save(nuevoLike);
+        return "registrado";
     }
 
     // Obtener lista de likes mediante la URL pública

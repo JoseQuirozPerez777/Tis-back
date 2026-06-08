@@ -156,8 +156,8 @@ public class EnlacePublicoController {
 
         try {
             String correoUsuarioQueDaLike = authentication.getName();
-            enlacePublicoService.registrarLike(textoUrl, correoUsuarioQueDaLike);
-            return ResponseEntity.ok().body(java.util.Map.of("message", "Like registrado correctamente."));
+            String result = enlacePublicoService.registrarLike(textoUrl, correoUsuarioQueDaLike);
+            return ResponseEntity.ok().body(java.util.Map.of("message", "Like "+result+" correctamente."));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
