@@ -428,7 +428,8 @@ public class EnlacePublicoService {
 
         boolean yaTieneLike = likePerfilRepository.existsByPerfilAndUsuarioLike(perfilDestino, usuarioLike);
         if (yaTieneLike) {
-            throw new RuntimeException("Ya le has dado 'Like' a este perfil");
+            eliminarLike(perfilDestino,usuarioLike);
+            return;
         }
 
         LikePerfil nuevoLike = LikePerfil.builder()
@@ -476,13 +477,7 @@ public class EnlacePublicoService {
     }
 
     @org.springframework.transaction.annotation.Transactional
-    public void eliminarLike(String textoUrl, String correoUsuarioQueQuitaLike) {
-        String correoDecodificado = obtenerCorreo(textoUrl);
-        Usuario perfilDestino = usuarioRepository.findByCorreo(correoDecodificado)
-                .orElseThrow(() -> new RuntimeException("Perfil de destino no encontrado"));
-
-        Usuario usuarioLike = usuarioRepository.findByCorreo(correoUsuarioQueQuitaLike)
-                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+    public void eliminarLike(Usuario perfilDestino, Usuario usuarioLike) {
 
         // Buscamos el registro exacto de la combinación perfil <-> usuario
         // Nota: Si no tienes el método findByPerfilAndUsuarioLike en tu LikePerfilRepository,

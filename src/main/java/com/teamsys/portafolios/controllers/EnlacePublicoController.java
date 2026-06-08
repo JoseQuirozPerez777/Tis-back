@@ -224,7 +224,7 @@ public class EnlacePublicoController {
 
         try {
             String correoUsuarioQueQuitaLike = authentication.getName();
-            enlacePublicoService.eliminarLike(textoUrl, correoUsuarioQueQuitaLike);
+            enlacePublicoService.registrarLike(textoUrl, correoUsuarioQueQuitaLike);
             return ResponseEntity.ok().body(java.util.Map.of("message", "Like eliminado correctamente."));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
