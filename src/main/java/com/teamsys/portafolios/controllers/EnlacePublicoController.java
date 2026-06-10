@@ -200,6 +200,37 @@ public class EnlacePublicoController {
         }
     }
 
+@GetMapping("/profile/{textoUrl}/liked")
+public ResponseEntity<?> verificarLike(
+        @PathVariable String textoUrl,
+        Authentication authentication) {
+
+    if (authentication == null || !authentication.isAuthenticated()) {
+        return ResponseEntity.ok(
+                java.util.Map.of("liked", false)
+        );
+    }
+
+    try {
+
+        boolean liked = enlacePublicoService.usuarioYaDioLike(
+                textoUrl,
+                authentication.getName()
+        );
+
+        return ResponseEntity.ok(
+                java.util.Map.of("liked", liked)
+        );
+
+    } catch (Exception e) {
+
+        return ResponseEntity.ok(
+                java.util.Map.of("liked", false)
+        );
+
+    }
+}
+
     // 5. Obtener el TOTAL numérico de likes de MI propio perfil (Autenticado)
     @GetMapping("/mis-likes/total")
     public ResponseEntity<?> obtenerTotalMisLikes(Authentication authentication) {

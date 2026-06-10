@@ -450,6 +450,24 @@ public class EnlacePublicoService {
         return obtenerLikesPorUsuario(perfil);
     }
 
+public boolean usuarioYaDioLike(
+        String textoUrl,
+        String correoUsuario) {
+
+    String correoPerfil = obtenerCorreo(textoUrl);
+
+    Usuario perfil = usuarioRepository.findByCorreo(correoPerfil)
+            .orElseThrow(() -> new RuntimeException("Perfil no encontrado"));
+
+    Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+    return likePerfilRepository.existsByPerfilAndUsuarioLike(
+            perfil,
+            usuario
+    );
+}
+
     // Obtener lista de likes pasando la entidad Usuario directamente
     public List<LikePerfilDTO> obtenerLikesPorUsuario(Usuario perfil) {
         List<LikePerfil> likes = likePerfilRepository.findByPerfilOrderByFechaLikeDesc(perfil);
@@ -477,6 +495,8 @@ public class EnlacePublicoService {
         return likePerfilRepository.countByPerfil(perfil);
     }
 
+
+    
     @org.springframework.transaction.annotation.Transactional
     public void eliminarLike(Usuario perfilDestino, Usuario usuarioLike) {
 
