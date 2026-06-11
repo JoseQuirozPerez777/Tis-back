@@ -25,7 +25,7 @@ public class FormacionAcademica {
     @Column(nullable = false)
     private String institucion;
 
-    @Column(nullable = false, name = "titulo_obtenido")
+    @Column(nullable = true, name = "titulo_obtenido")
     private String tituloObtenido;
 
     @Enumerated(EnumType.STRING)
