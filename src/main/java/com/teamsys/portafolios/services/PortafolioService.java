@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.teamsys.portafolios.dto.BusquedaFiltrosDTO;
 import com.teamsys.portafolios.dto.PortafolioResponseDTO;
 import com.teamsys.portafolios.dto.ResultadoBusquedaDTO;
+import com.teamsys.portafolios.dto.VisibilidadPerfilDTO;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -39,6 +41,9 @@ public class PortafolioService {
 
     @Autowired
     private HabilidadTecnicaRepository habilidadTecnicaRepository;
+    
+    @Autowired
+    private VisibilidadPerfilService visibilidadPerfilService;
 
     private final ExperienciaLaboralRepository experienciaRepository;
     private final FormacionRepository formacionRepository;
@@ -164,23 +169,51 @@ public class PortafolioService {
                     .build()
             ).collect(Collectors.toList());
 
+        VisibilidadPerfilDTO visibilidad =
+        visibilidadPerfilService.obtenerVisibilidadConfig(usuario);
         // Compilar todo en el DTO raíz de respuesta
         return PortafolioCompletoDTO.builder()
-                .nombre(usuario.getNombre())
-                .correo(usuario.getCorreo())
-                .foto(usuario.getFoto())
-                .profesion(usuario.getProfesion() != null ? usuario.getProfesion().getNombreProfesion() : "Sin profesión especificada")
-                .biografia(usuario.getBiografia())
-                .telefono(usuario.getTelefono())
-                .direccion(usuario.getDireccion())
-                .enlacePublico(usuario.getEnlacePublico())
-                .experienciasLaborales(listaExperiencias)
-                .formacionesAcademica(listaFormaciones)
-                .habilidadesTecnicas(listaHabTecnicas)
-                .habilidadesBlandas(listaHabBlandas)
-                .proyectos(listaProyectos)
-                .redesSociales(listaRedes)
-                .build();
+        .nombre(
+                visibilidad.isNombreUsr()
+                        ? usuario.getNombre()
+                        : "Usuario Privado"
+        )
+        .correo(
+                visibilidad.isCorreoUsr()
+                        ? usuario.getCorreo()
+                        : null
+        )
+        .foto(usuario.getFoto())
+        .profesion(
+                visibilidad.isProfesionUsr()
+                        ? (usuario.getProfesion() != null
+                            ? usuario.getProfesion().getNombreProfesion()
+                            : "Sin profesión especificada")
+                        : null
+        )
+        .biografia(
+                visibilidad.isBiografiaUsr()
+                        ? usuario.getBiografia()
+                        : null
+        )
+        .telefono(
+                visibilidad.isTelefonoUsr()
+                        ? usuario.getTelefono()
+                        : null
+        )
+        .direccion(
+                visibilidad.isDireccionUsr()
+                        ? usuario.getDireccion()
+                        : null
+        )
+        .enlacePublico(usuario.getEnlacePublico())
+        .experienciasLaborales(listaExperiencias)
+        .formacionesAcademica(listaFormaciones)
+        .habilidadesTecnicas(listaHabTecnicas)
+        .habilidadesBlandas(listaHabBlandas)
+        .proyectos(listaProyectos)
+        .redesSociales(listaRedes)
+        .build();
     }
 
     
