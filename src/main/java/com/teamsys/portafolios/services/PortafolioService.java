@@ -286,10 +286,30 @@ public class PortafolioService {
             Join<Usuario, Profesion> profesionJoin = root.join("profesion", JoinType.LEFT);
 
             Predicate nombreMatch = cb.like(cb.lower(root.get("nombre")), buscarLike);
-            Predicate biografiaMatch = cb.like(cb.lower(root.get("biografia")), buscarLike);
-            Predicate profesionMatch = cb.like(cb.lower(profesionJoin.get("nombreProfesion")), buscarLike);
+Predicate biografiaMatch = cb.like(cb.lower(root.get("biografia")), buscarLike);
+Predicate profesionMatch = cb.like(cb.lower(profesionJoin.get("nombreProfesion")), buscarLike);
 
-            predicates.add(cb.or(nombreMatch, biografiaMatch, profesionMatch));
+Subquery<Long> subqueryEmpresaGeneral = cq.subquery(Long.class);
+Root<ExperienciaLaboral> subqueryEmpresaGeneralRoot =
+        subqueryEmpresaGeneral.from(ExperienciaLaboral.class);
+
+subqueryEmpresaGeneral.select(
+        subqueryEmpresaGeneralRoot.get("usuario").get("idUsuario")
+).where(
+        cb.like(
+                cb.lower(subqueryEmpresaGeneralRoot.get("nombreEmpresa")),
+                buscarLike
+        )
+);
+
+Predicate empresaGeneralMatch = root.get("idUsuario").in(subqueryEmpresaGeneral);
+
+predicates.add(cb.or(
+        nombreMatch,
+        biografiaMatch,
+        profesionMatch,
+        empresaGeneralMatch
+));
         }
 
         // --- FILTRO POR PROFESIÓN ---
@@ -307,6 +327,26 @@ public class PortafolioService {
 
             predicates.add(root.get("idUsuario").in(subqueryExpEsp));
         }
+
+        // --- FILTRO POR EMPRESA / EXPERIENCIA LABORAL ---
+if (filtros.getEmpresa() != null && !filtros.getEmpresa().trim().isEmpty()) {
+    String empresaLike = "%" + filtros.getEmpresa().trim().toLowerCase() + "%";
+
+    Subquery<Long> subqueryEmpresa = cq.subquery(Long.class);
+    Root<ExperienciaLaboral> subqueryEmpresaRoot =
+            subqueryEmpresa.from(ExperienciaLaboral.class);
+
+    subqueryEmpresa.select(
+            subqueryEmpresaRoot.get("usuario").get("idUsuario")
+    ).where(
+            cb.like(
+                    cb.lower(subqueryEmpresaRoot.get("nombreEmpresa")),
+                    empresaLike
+            )
+    );
+
+    predicates.add(root.get("idUsuario").in(subqueryEmpresa));
+}
 
         // --- FILTRO POR FORMACIÓN ACADÉMICA ---
         if (filtros.getFormacionAcademica() != null && !filtros.getFormacionAcademica().trim().isEmpty()) {

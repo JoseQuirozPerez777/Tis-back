@@ -3,16 +3,20 @@ package com.teamsys.portafolios.dto;
 import lombok.*;
 import java.util.List;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class BusquedaFiltrosDTO {
-    private String buscar;             // Barra general (nombre, profesión, tecnología, etc.)
+    private String buscar;             // Barra general: nombre, profesión, tecnología, empresa, etc.
     private String profesion;
     private String especializacion;
     private String tecnologia;
+    private String empresa;            // Empresa donde trabajó o tiene experiencia
     private String formacionAcademica; // Nivel o área académica
-    private String disponibilidad;      // Estado laboral
+    private String disponibilidad;     // Estado laboral
     private String modalidadTrabajo;   // PRESENCIAL, REMOTO, HIBRIDO
-    private Integer experienciaMinima;  // Años mínimos
+    private Integer experienciaMinima; // Años mínimos
     private List<String> idiomas;
     private String ubicacion;
 
