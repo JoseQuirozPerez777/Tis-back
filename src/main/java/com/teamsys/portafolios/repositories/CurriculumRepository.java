@@ -16,4 +16,6 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Long> {
         // Obtener todas las habilidades blandas de un usuario
     List<Curriculum> findByUsuario(Usuario usuario);
 
+
+    java.util.Optional<Curriculum> findByUsuarioAndEsOficialTrue(Usuario usuario);
 }

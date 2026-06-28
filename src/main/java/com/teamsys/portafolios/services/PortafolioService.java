@@ -40,6 +40,9 @@ public class PortafolioService {
     private HabilidadBlandaRepository habilidadBlandaRepository;
 
     @Autowired
+    private CurriculumRepository curriculumRepository;
+
+    @Autowired
     private HabilidadTecnicaRepository habilidadTecnicaRepository;
     
     @Autowired
@@ -169,6 +172,10 @@ public class PortafolioService {
                     .build()
             ).collect(Collectors.toList());
 
+        String urlCvOficial = curriculumRepository.findByUsuarioAndEsOficialTrue(usuario)
+            .map(Curriculum::getUrlPdf) // Extrae la propiedad 'urlPdf' si el CV existe
+            .orElse(null);
+
         VisibilidadPerfilDTO visibilidad =
         visibilidadPerfilService.obtenerVisibilidadConfig(usuario);
         // Compilar todo en el DTO raíz de respuesta
@@ -207,6 +214,7 @@ public class PortafolioService {
                         : null
         )
         .enlacePublico(usuario.getEnlacePublico())
+        .urlCv(urlCvOficial)
         .experienciasLaborales(listaExperiencias)
         .formacionesAcademica(listaFormaciones)
         .habilidadesTecnicas(listaHabTecnicas)

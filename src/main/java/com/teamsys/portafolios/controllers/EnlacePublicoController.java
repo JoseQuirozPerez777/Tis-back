@@ -7,6 +7,7 @@ import com.teamsys.portafolios.repositories.UsuarioRepository;
 import com.teamsys.portafolios.services.EnlacePublicoService;
 
 import java.util.List;
+import java.util.Collections;
 
 import com.teamsys.portafolios.services.VisibilidadPerfilService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,12 +140,21 @@ public class EnlacePublicoController {
     public ResponseEntity<?> obtenerCurriculumOficial(@PathVariable String textoUrl) {
         try {
             EnlacePublicoService.CurriculumResumenDTO curriculumDto = enlacePublicoService.obtenerCurriculumOficial(textoUrl);
+            
             if (curriculumDto == null) {
-                return ResponseEntity.noContent().build(); // Retorna 204 si no hay un CV oficial marcado
+                // Modificado: Si es null, devolvemos un JSON con la propiedad en null o vacío, según prefieras
+                return ResponseEntity.ok(Collections.singletonMap("urlCv", null));
             }
-            return ResponseEntity.ok(curriculumDto);
+            
+            // Extraemos la URL
+            String urlCv = curriculumDto.getUrlCv(); 
+            
+            // Retornamos un mapa que Spring convertirá automáticamente a: { "urlCv": "valor" }
+            return ResponseEntity.ok(Collections.singletonMap("urlCv", urlCv));
+            
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
+            // Para mantener la consistencia de JSON en los errores, puedes envolver el mensaje también
+            return ResponseEntity.status(404).body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 

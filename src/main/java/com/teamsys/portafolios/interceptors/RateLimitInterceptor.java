@@ -40,7 +40,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         int intentos = intentosPorIp.getOrDefault(ipCliente, 0) + 1;
         intentosPorIp.put(ipCliente, intentos);
 
-        if (intentos > 10) { // Límite de 10 intentos seguidos desde la misma IP
+        if (intentos > 100) { // Límite de 10 intentos seguidos desde la misma IP
             bloqueoIp.put(ipCliente, LocalDateTime.now().plusMinutes(5));
             return false;
         }

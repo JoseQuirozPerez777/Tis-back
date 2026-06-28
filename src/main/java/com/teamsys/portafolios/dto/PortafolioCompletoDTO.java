@@ -22,6 +22,7 @@ public class PortafolioCompletoDTO {
     private String telefono;
     private String direccion;
     private String enlacePublico;
+    private String urlCv;
 
     // Secciones del Portafolio
     private List<ExperienciaLaboralResumenDTO> experienciasLaborales;
